@@ -60,16 +60,46 @@ download_csv(CSV_FILES["tests"]["url"], CSV_FILES["tests"]["filename"])  # tests
 
 # Manually deal with each collection
 # Infected CSV
-df_infected = pd.read_csv(CSV_FILES["infected"]["filename"])
-df_infected = df_infected.drop(["nakaza_v_zahranici", "nakaza_zeme_csu_kod"], axis=1)  # remove unwanted columns
+df_infected = pd.read_csv(CSV_FILES["infected"]["filename"], usecols=lambda c: c in {'datum', 'vek', 'pohlavi', 'kraj_nuts_kod', 'okres_lau_kod'}, sep=",")
+df_infected.rename(columns={'datum': 'date', 'vek': 'age', 'pohlavi': 'gender', 'kraj_nuts_kod': 'region', 'okres_lau_kod': 'district'}, inplace=True)
+
+# rename gender names (M/Z) to full name (male/female)
+gender_dict = {"M": "male", "Z": "female"}
+df_infected = df_infected.replace({"gender": gender_dict})
+
+# convert age to int
+df_infected['age'] = pd.to_numeric(df_infected['age'], errors='coerce')
+df_infected = df_infected.dropna(subset=['age'])
+df_infected['age'] = df_infected['age'].astype('int')
+
 insert_df_to_mongo(mydb, "infected", df_infected)  # insert into NoSQL db
 
 # Cured CSV
-df_cured = pd.read_csv(CSV_FILES["cured"]["filename"])
+df_cured = pd.read_csv(CSV_FILES["cured"]["filename"], usecols=lambda c: c in {'datum', 'vek', 'pohlavi', 'kraj_nuts_kod', 'okres_lau_kod'}, sep=",")
+df_cured.rename(columns={'datum': 'date', 'vek': 'age', 'pohlavi': 'gender', 'kraj_nuts_kod': 'region', 'okres_lau_kod': 'district'}, inplace=True)
+
+# rename gender names (M/Z) to full name (male/female)
+df_cured = df_cured.replace({"gender": gender_dict})
+
+# convert age to int
+df_cured['age'] = pd.to_numeric(df_cured['age'], errors='coerce')
+df_cured = df_cured.dropna(subset=['age'])
+df_cured['age'] = df_cured['age'].astype('int')
+
 insert_df_to_mongo(mydb, "cured", df_cured)  # insert into NoSQL db
 
 # Dead CSV
-df_dead = pd.read_csv(CSV_FILES["dead"]["filename"])
+df_dead = pd.read_csv(CSV_FILES["dead"]["filename"], usecols=lambda c: c in {'datum', 'vek', 'pohlavi', 'kraj_nuts_kod', 'okres_lau_kod'}, sep=",")
+df_dead.rename(columns={'datum': 'date', 'vek': 'age', 'pohlavi': 'gender', 'kraj_nuts_kod': 'region', 'okres_lau_kod': 'district'}, inplace=True)
+
+# rename gender names (M/Z) to full name (male/female)
+df_dead = df_dead.replace({"gender": gender_dict})
+
+# convert age to int
+df_dead['age'] = pd.to_numeric(df_dead['age'], errors='coerce')
+df_dead = df_dead.dropna(subset=['age'])
+df_dead['age'] = df_dead['age'].astype('int')
+
 insert_df_to_mongo(mydb, "dead", df_dead)  # insert into NoSQL db
 
 # Hospitalized CSV
