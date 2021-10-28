@@ -4,7 +4,6 @@ import requests
 import csv
 import os
 
-# TODO - datum as datetime?
 # TODO - region names instead of codes?
 # TODO - aggregate by age?
 
@@ -76,6 +75,16 @@ print(df_dead.head())
 insert_df_to_mongo(mydb, "dead", df_dead)  # insert into NoSQL db
 
 # Hospitalized CSV
-df_hospitalized = pd.read_csv(CSV_FILES["hospitalized"]["filename"])
-print(df_hospitalized.head())
-insert_df_to_mongo(mydb, "hospitalized", df_hospitalized)  # insert into NoSQL db
+df_hospitalized = pd.read_csv(CSV_FILES["hospitalized"]["filename"], usecols=lambda c: c in {'datum', 'pacient_prvni_zaznam'}, sep=",")
+df_hospitalized.rename(columns={'datum': 'date', 'pacient_prvni_zaznam': 'patients'}, inplace=True)
+df_hospitalized['date'] = pd.to_datetime(df_hospitalized['date'])
+df_hospitalized['patients'] = pd.to_numeric(df_hospitalized['patients'], errors='coerce')
+df_hospitalized = df_hospitalized.dropna(subset=['patients'])
+df_hospitalized['patients'] = df_hospitalized['patients'].astype('int')
+df_hospitalized['month'] = df_hospitalized["date"].dt.to_period("M")
+grouped_hospitalized = df_hospitalized.groupby(['month'])['patients'].sum()
+grouped_hospitalized = grouped_hospitalized.reset_index()
+grouped_hospitalized['month'] = grouped_hospitalized['month'].astype(str)
+grouped_hospitalized['month'] = pd.to_datetime(grouped_hospitalized['month']).apply(lambda x: x.strftime('%Y-%m'))
+insert_df_to_mongo(mydb, "hospitalized", grouped_hospitalized)  # insert into NoSQL db
+
