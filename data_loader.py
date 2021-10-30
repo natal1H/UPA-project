@@ -5,7 +5,6 @@ import csv
 import os
 from argparse import ArgumentParser
 
-
 """UPA - 1st part
     Theme: Covid-19
     Authors: 
@@ -14,11 +13,14 @@ from argparse import ArgumentParser
         - Roland Žitný (xzitny01)
 """
 
-
 parser = ArgumentParser(prog='UPA-data_loader')
-parser.add_argument('-m', '--mongo', help="Mongo db location", default="mongodb://localhost:27017/")
+# parser.add_argument('-m', '--mongo', help="Mongo db location", default="mongodb://localhost:27017/")
+
+# TODO VB DB
+parser.add_argument('-m', '--mongo', help="Mongo db location",
+                    default="mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000")
 parser.add_argument('-f', '--folder', help="Folder for downloading csv files", default="data/")
-parser.add_argument('-d', '--database', help="Database name", default="UPA-xholko02")
+parser.add_argument('-d', '--database', help="Database name", default="UPA-db")
 
 DATA_FOLDER = "data/"
 CSV_FILES = {
@@ -43,8 +45,12 @@ CSV_FILES = {
     "vaccinated_people":
         {"url": "https://onemocneni-aktualne.mzcr.cz/api/v2/covid-19/ockovani-demografie.csv",
          "filename": DATA_FOLDER + "vaccinated-people.csv"},
+    "vaccinated_geography":
+        {"url": "https://onemocneni-aktualne.mzcr.cz/api/v2/covid-19/ockovani-geografie.csv",
+         "filename": DATA_FOLDER + "vaccinated-geography.csv"},
 }
 gender_dict = {"M": "male", "Z": "female"}
+
 
 def download_csv(url, filename):
     # check if already downloaded
@@ -56,12 +62,14 @@ def download_csv(url, filename):
             for line in response.iter_lines():
                 writer.writerow(line.decode('utf-8').split(','))
 
+
 def insert_df_to_mongo(db, col_name, df):
     # drop collection if already exists?
     if col_name in db.list_collection_names():
         db[col_name].drop()
     mycol = db[col_name]
     mycol.insert_many(df.to_dict('records'))
+
 
 def load_infected(db):
     # Infected CSV
@@ -81,6 +89,7 @@ def load_infected(db):
 
     insert_df_to_mongo(db, "infected", df_infected)  # insert into NoSQL db
 
+
 def load_cured(db):
     # Cured CSV
     df_cured = pd.read_csv(CSV_FILES["cured"]["filename"],
@@ -99,6 +108,7 @@ def load_cured(db):
 
     insert_df_to_mongo(db, "cured", df_cured)  # insert into NoSQL db
 
+
 def load_dead(db):
     # Dead CSV
     df_dead = pd.read_csv(CSV_FILES["dead"]["filename"],
@@ -115,6 +125,7 @@ def load_dead(db):
     df_dead['age'] = df_dead['age'].astype('int')
 
     insert_df_to_mongo(db, "dead", df_dead)  # insert into NoSQL db
+
 
 def load_hospitalized(db):
     # Hospitalized CSV
@@ -133,6 +144,7 @@ def load_hospitalized(db):
     grouped_hospitalized['month'] = grouped_hospitalized['month'].astype(str)
     grouped_hospitalized['month'] = pd.to_datetime(grouped_hospitalized['month']).apply(lambda x: x.strftime('%Y-%m'))
     insert_df_to_mongo(db, "hospitalized", grouped_hospitalized)  # insert into NoSQL db
+
 
 def load_tests(db):
     # Tests CSV
@@ -164,6 +176,7 @@ def load_tests(db):
 
     insert_df_to_mongo(db, "tests", grouped_tests)  # insert into NoSQL db
 
+
 def load_vaccinated(db):
     # vaccinated regions
     df_vac_reg = pd.read_csv(CSV_FILES["vaccinated_regions"]["filename"],
@@ -176,14 +189,78 @@ def load_vaccinated(db):
     insert_df_to_mongo(db, "vaccinated_regions", grouped_vac_reg)  # insert into NoSQL db
 
     # vaccinated people
+    # (date, age_group, gender)
     df_vac_people = pd.read_csv(CSV_FILES["vaccinated_people"]["filename"],
                                 usecols=lambda c: c in {'datum', 'vekova_skupina', 'pohlavi'}, sep=",")
-    df_vac_people.rename(columns={'datum': 'date', 'vekova_skupina': 'age_group', 'pohlavi': 'gender'}, inplace=True)
+    df_vac_people.rename(columns={'datum': 'date',
+                                  'vekova_skupina': 'age_group',
+                                  'pohlavi': 'gender',
+                                  }, inplace=True)
 
     # rename gender names (M/Z) to full name (male/female)
     df_vac_people = df_vac_people.replace({"gender": gender_dict})
 
     insert_df_to_mongo(db, "vaccinated_people", df_vac_people)  # insert into NoSQL db
+
+    # vaccinated geography
+    # (date, region, vaccine code)
+    df_vac_geo = pd.read_csv(CSV_FILES["vaccinated_geography"]["filename"],
+                             usecols=lambda c: c in {'datum',
+                                                     'kraj_nuts_kod',
+                                                     'vakcina_kod'}, sep=",")
+    df_vac_geo.rename(columns={'datum': 'date',
+                               'kraj_nuts_kod': 'region',
+                               'vakcina_kod': "vaccine code"
+                               }, inplace=True)
+
+    insert_df_to_mongo(db, "vaccinated_geography", df_vac_geo)  # insert into NoSQL db
+
+    db.create_collection(
+        'A3_view',
+        viewOn='vaccinated_geography',
+        pipeline=[{
+            '$lookup': {
+                'from': "vaccinated_people",
+                'localField': "date",
+                'foreignField': "date",
+                'as': "vaccinated_people_data"
+            }
+        },
+            {
+                '$unwind': "$vaccinated_people_data"
+            },
+            {"$project": {"date": 1,
+                          'region': 1,
+                          'kraj_nuts_kod': '$vaccinated_people_data.kraj_nuts_kod',
+                          'vaccine code': 1,
+                          'age_group': '$vaccinated_people_data.age_group'}
+             }
+        ]
+    )
+    db.create_collection(
+        'C1_view',
+        viewOn='A3_view',
+        pipeline=[{
+            '$lookup': {
+                'from': "infected",
+                'localField': "date",
+                'foreignField': "date",
+                'as': "infected_data"
+            }
+        },
+            {
+                '$unwind': "$infected_data"
+            },
+            {"$project": {"date": 1,
+                          'region': 1,
+                          'kraj_nuts_kod': 1,
+                          'district': '$infected_data.district',
+                          'vaccine code': 1,
+                          'age_group': 1}
+             }
+        ]
+    )
+
 
 def main():
     """
@@ -211,8 +288,12 @@ def main():
     download_csv(CSV_FILES["dead"]["url"], CSV_FILES["dead"]["filename"])  # dead
     download_csv(CSV_FILES["hospitalized"]["url"], CSV_FILES["hospitalized"]["filename"])  # hospitalized
     download_csv(CSV_FILES["tests"]["url"], CSV_FILES["tests"]["filename"])  # tests
-    download_csv(CSV_FILES["vaccinated_regions"]["url"], CSV_FILES["vaccinated_regions"]["filename"])  # vaccinated regions
-    download_csv(CSV_FILES["vaccinated_people"]["url"], CSV_FILES["vaccinated_people"]["filename"])  # vaccinated regions
+    download_csv(CSV_FILES["vaccinated_regions"]["url"],
+                 CSV_FILES["vaccinated_regions"]["filename"])  # vaccinated regions
+    download_csv(CSV_FILES["vaccinated_people"]["url"],
+                 CSV_FILES["vaccinated_people"]["filename"])  # vaccinated regions
+    download_csv(CSV_FILES["vaccinated_geography"]["url"],
+                 CSV_FILES["vaccinated_geography"]["filename"])  # vaccinated geography
 
     # Manually deal with each collection
     load_infected(mongo_db)
