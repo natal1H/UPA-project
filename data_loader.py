@@ -215,6 +215,8 @@ def load_vaccinated(db):
 
     insert_df_to_mongo(db, "vaccinated_geography", df_vac_geo)  # insert into NoSQL db
 
+    if 'A3_view' in db.list_collection_names():
+        db['A3_view'].drop()
     db.create_collection(
         'A3_view',
         viewOn='vaccinated_geography',
@@ -237,6 +239,10 @@ def load_vaccinated(db):
              }
         ]
     )
+
+    if 'C1_view' in db.list_collection_names():
+        db['C1_view'].drop()
+
     db.create_collection(
         'C1_view',
         viewOn='A3_view',
@@ -260,6 +266,7 @@ def load_vaccinated(db):
              }
         ]
     )
+
 
 
 def main():
