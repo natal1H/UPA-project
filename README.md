@@ -22,7 +22,7 @@ počet nově nakažených za měsíc, počet nově vyléčených za měsíc, po�
 Pokud nebude výsledný graf dobře čitelný, zvažte logaritmické měřítko, nebo rozdělte hodnoty do více grafů. 
 ```
 
-Pre bod ***A1*** je nutné získať počet *nakazených*, *vyliečených* a *hospitalizovaných* osob za mesiac a počet *vykonaných testov* za mesiac.
+Pre bod ***A1*** je nutné získať počet *nakazených*, *vyliečených* a *hospitalizovaných* osôb za mesiac a počet *vykonaných testov* za mesiac.
 
 ```
 A3
@@ -34,7 +34,7 @@ Vytvořte sérii sloupcových grafů, které zobrazí:
 3. graf: Počty provedených očkování, ještě dále rozdělené dle věkové skupiny. Pro potřeby tohoto diagramu postačí 3 věkové skupiny (0-24 let, 25-59, nad 59).
 ```
 
-V bode ***A3*** sa musíme oboznámiť s jednotlivými *krajmi*, ich priradenými *kódmi* a následne s počtami *očkovaní* v jednotlivých krajoch a ich závislosťami na *pohlavie* a *vekové skupiny*.
+V bode ***A3*** sa musíme oboznámiť s jednotlivými *krajami*, ich priradenými *kódmi* a následne s počtami *očkovaní* v jednotlivých krajoch a ich závislosťami na *pohlavie* a *vekové skupiny*.
 
 - ***Dotazy skupin B:***
 
@@ -62,6 +62,8 @@ Pro potřeby projektu vyberte libovolně 50 měst, pro které najdete potřebné
 ```
 
 Vo finálnom dotaze ***C1*** je nutné získať data o jednotlivých *mestách* a *veku* ich obyvateľov, kedy budeme sledovať počet *nakazených* a *očkovaných*. 
+
+
 
 ### Popis zdrojov
 
@@ -107,7 +109,7 @@ Vo finálnom dotaze ***C1*** je nutné získať data o jednotlivých *mestách* 
 
 ***
 
-## Schéma dat a ich spracovanie
+## Schéma dat a ich zpracovanie
 
 ***Nakazení:*** výsledné data ohľadne nakazených osob bolo nutné očistiť od 
 nepotrebných informácií a previesť pohlavie podľa slovníka.
@@ -116,21 +118,22 @@ nepotrebných informácií a previesť pohlavie podľa slovníka.
 | date | age | gender | region | district |
 |------|-----|--------|--------|----------|
 
-***Vyliečení:*** tieto data zostali v pôvodnej podobe.
+***Vyliečení:*** tieto data zostali v pôvodnej podobe s prevedením pohlavia podľa slovníka.
 
 | date | age | gender | region | district |
 |------|-----|--------|--------|----------|
 
 ***Hospitalizovaní:*** v dátach o hospitalizovaných nám postačujú 
-iba informácie o dátume a počte hospitalizovaných. Ostatné boli odstránené a hodnota dátumu upravená pre naše potreby. 
+iba informácie o dátume a počte hospitalizovaných. Ostatné boli odstránené a hodnota dátumu upravená pre naše potreby.
+Počty hospitalizovaných osôb sú zoskupené podľa mesiacov.
 
-| date | patients |
-|------|----------|
+| month | patients |
+|-------|----------|
 
-***Testy:*** pri počte vykonaných testov sa ponechali iba dátum a počet PCR a AG testov, ktoré sa následne zoskupili do jednej hodnoty vyjadrujúcej počet celkových testov.
+***Testy:*** pri počte vykonaných testov sa ponechali iba dátum a počet PCR a AG testov, ktoré sa následne zoskupili do jednej hodnoty vyjadrujúcej počet celkových testov za jednotlivé mesiace.
 
-| date | tests |
-|------|-------|
+| month | tests |
+|-------|-------|
 
 ***Kraje:*** TODO
 
@@ -154,13 +157,15 @@ získať data zo spomenutého druhého zdroja a jemne očistiť data.
 | date | age | gender | region | district |
 |------|-----|--------|--------|----------|
 
+***
 
 ## Vybrané technológie a spustenie
 
 ### Technologie:
-pymongo
-python
-...
+
+- ***Python3.8***
+- ***MongoDB*** - NoSQL DB
+- ***Pandas*** - manipulácia a analýza dat
 
 ### Inštalácia:
 
@@ -172,5 +177,5 @@ pip3 install -r requirements.txt
 ### Spustenie:
 
 ```
-neviem
+DODAT
 ```
