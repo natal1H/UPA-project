@@ -5,7 +5,6 @@ import csv
 import os
 from argparse import ArgumentParser
 
-
 """UPA - 1st part
     Theme: Covid-19
     Authors: 
@@ -13,7 +12,6 @@ from argparse import ArgumentParser
         - Natália Holková (xholko02)
         - Roland Žitný (xzitny01)
 """
-
 
 parser = ArgumentParser(prog='UPA-data_loader')
 parser.add_argument('-m', '--mongo', help="Mongo db location", default="mongodb://localhost:27017/")
@@ -46,7 +44,16 @@ CSV_FILES = {
 }
 gender_dict = {"M": "male", "Z": "female"}
 
+
 def download_csv(url, filename):
+    """
+    Get CSV data.
+
+    Args:
+        url: csv URL
+        filename: name of file
+
+    """
     # check if already downloaded
     if not os.path.exists(filename):
         # download csv
@@ -56,14 +63,33 @@ def download_csv(url, filename):
             for line in response.iter_lines():
                 writer.writerow(line.decode('utf-8').split(','))
 
+
 def insert_df_to_mongo(db, col_name, df):
+    """
+    Inserts data frame into mongo DB.
+    If collections are already inserted, drop them and load again.
+
+    Args:
+        db: Mongo DB
+        col_name: collection name
+        df: data frame
+
+    """
     # drop collection if already exists?
     if col_name in db.list_collection_names():
         db[col_name].drop()
     mycol = db[col_name]
     mycol.insert_many(df.to_dict('records'))
 
+
 def load_infected(db):
+    """
+    Loads infected as:  date | age | gender | region | district
+
+    Args:
+        db: Mongo DB
+
+    """
     # Infected CSV
     df_infected = pd.read_csv(CSV_FILES["infected"]["filename"],
                               usecols=lambda c: c in {'datum', 'vek', 'pohlavi', 'kraj_nuts_kod', 'okres_lau_kod'},
@@ -81,7 +107,15 @@ def load_infected(db):
 
     insert_df_to_mongo(db, "infected", df_infected)  # insert into NoSQL db
 
+
 def load_cured(db):
+    """
+    Loads cured as:  data | age | gender | region | district
+
+    Args:
+        db: Mongo DB
+
+    """
     # Cured CSV
     df_cured = pd.read_csv(CSV_FILES["cured"]["filename"],
                            usecols=lambda c: c in {'datum', 'vek', 'pohlavi', 'kraj_nuts_kod', 'okres_lau_kod'},
@@ -99,7 +133,15 @@ def load_cured(db):
 
     insert_df_to_mongo(db, "cured", df_cured)  # insert into NoSQL db
 
+
 def load_dead(db):
+    """
+    Loads dead as:  date | age | gender | region | district
+
+    Args:
+        db: Mongo DB
+
+    """
     # Dead CSV
     df_dead = pd.read_csv(CSV_FILES["dead"]["filename"],
                           usecols=lambda c: c in {'datum', 'vek', 'pohlavi', 'kraj_nuts_kod', 'okres_lau_kod'}, sep=",")
@@ -116,7 +158,15 @@ def load_dead(db):
 
     insert_df_to_mongo(db, "dead", df_dead)  # insert into NoSQL db
 
+
 def load_hospitalized(db):
+    """
+    Loads hospitalized as:  month | patients
+
+    Args:
+        db: Mongo DB
+
+    """
     # Hospitalized CSV
     df_hospitalized = pd.read_csv(CSV_FILES["hospitalized"]["filename"],
                                   usecols=lambda c: c in {'datum', 'pacient_prvni_zaznam'}, sep=",")
@@ -134,7 +184,15 @@ def load_hospitalized(db):
     grouped_hospitalized['month'] = pd.to_datetime(grouped_hospitalized['month']).apply(lambda x: x.strftime('%Y-%m'))
     insert_df_to_mongo(db, "hospitalized", grouped_hospitalized)  # insert into NoSQL db
 
+
 def load_tests(db):
+    """
+    Loads tests as:  month | tests
+
+    Args:
+        db: Mongo DB
+
+    """
     # Tests CSV
     df_tests = pd.read_csv(CSV_FILES["tests"]["filename"],
                            usecols=lambda c: c in {'datum', 'pocet_PCR_testy', 'pocet_AG_testy'}, sep=",")
@@ -164,7 +222,18 @@ def load_tests(db):
 
     insert_df_to_mongo(db, "tests", grouped_tests)  # insert into NoSQL db
 
+
 def load_vaccinated(db):
+    """
+    Loads vaccinated as:
+        vaccinated_regions:  region | count
+
+        vaccinated_people:  date | age_group | gender
+
+    Args:
+        db: Mongo DB
+
+    """
     # vaccinated regions
     df_vac_reg = pd.read_csv(CSV_FILES["vaccinated_regions"]["filename"],
                              usecols=lambda c: c in {'datum', 'kraj_nuts_kod'}, sep=",")
@@ -184,6 +253,7 @@ def load_vaccinated(db):
     df_vac_people = df_vac_people.replace({"gender": gender_dict})
 
     insert_df_to_mongo(db, "vaccinated_people", df_vac_people)  # insert into NoSQL db
+
 
 def main():
     """
@@ -211,8 +281,10 @@ def main():
     download_csv(CSV_FILES["dead"]["url"], CSV_FILES["dead"]["filename"])  # dead
     download_csv(CSV_FILES["hospitalized"]["url"], CSV_FILES["hospitalized"]["filename"])  # hospitalized
     download_csv(CSV_FILES["tests"]["url"], CSV_FILES["tests"]["filename"])  # tests
-    download_csv(CSV_FILES["vaccinated_regions"]["url"], CSV_FILES["vaccinated_regions"]["filename"])  # vaccinated regions
-    download_csv(CSV_FILES["vaccinated_people"]["url"], CSV_FILES["vaccinated_people"]["filename"])  # vaccinated regions
+    download_csv(CSV_FILES["vaccinated_regions"]["url"],
+                 CSV_FILES["vaccinated_regions"]["filename"])  # vaccinated regions
+    download_csv(CSV_FILES["vaccinated_people"]["url"],
+                 CSV_FILES["vaccinated_people"]["filename"])  # vaccinated regions
 
     # Manually deal with each collection
     load_infected(mongo_db)
