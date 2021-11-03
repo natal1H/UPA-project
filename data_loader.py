@@ -53,6 +53,14 @@ gender_dict = {"M": "male", "Z": "female"}
 
 
 def download_csv(url, filename):
+    """
+    Get CSV data.
+
+    Args:
+        url: csv URL
+        filename: name of file
+
+    """
     # check if already downloaded
     if not os.path.exists(filename):
         # download csv
@@ -64,6 +72,16 @@ def download_csv(url, filename):
 
 
 def insert_df_to_mongo(db, col_name, df):
+    """
+    Inserts data frame into mongo DB.
+    If collections are already inserted, drop them and load again.
+
+    Args:
+        db: Mongo DB
+        col_name: collection name
+        df: data frame
+
+    """
     # drop collection if already exists?
     if col_name in db.list_collection_names():
         db[col_name].drop()
@@ -72,6 +90,13 @@ def insert_df_to_mongo(db, col_name, df):
 
 
 def load_infected(db):
+    """
+    Loads infected as:  date | age | gender | region | district
+
+    Args:
+        db: Mongo DB
+
+    """
     # Infected CSV
     df_infected = pd.read_csv(CSV_FILES["infected"]["filename"],
                               usecols=lambda c: c in {'datum', 'vek', 'pohlavi', 'kraj_nuts_kod', 'okres_lau_kod'},
@@ -91,6 +116,13 @@ def load_infected(db):
 
 
 def load_cured(db):
+    """
+    Loads cured as:  data | age | gender | region | district
+
+    Args:
+        db: Mongo DB
+
+    """
     # Cured CSV
     df_cured = pd.read_csv(CSV_FILES["cured"]["filename"],
                            usecols=lambda c: c in {'datum', 'vek', 'pohlavi', 'kraj_nuts_kod', 'okres_lau_kod'},
@@ -110,6 +142,13 @@ def load_cured(db):
 
 
 def load_dead(db):
+    """
+    Loads dead as:  date | age | gender | region | district
+
+    Args:
+        db: Mongo DB
+
+    """
     # Dead CSV
     df_dead = pd.read_csv(CSV_FILES["dead"]["filename"],
                           usecols=lambda c: c in {'datum', 'vek', 'pohlavi', 'kraj_nuts_kod', 'okres_lau_kod'}, sep=",")
@@ -128,6 +167,13 @@ def load_dead(db):
 
 
 def load_hospitalized(db):
+    """
+    Loads hospitalized as:  month | patients
+
+    Args:
+        db: Mongo DB
+
+    """
     # Hospitalized CSV
     df_hospitalized = pd.read_csv(CSV_FILES["hospitalized"]["filename"],
                                   usecols=lambda c: c in {'datum', 'pacient_prvni_zaznam'}, sep=",")
@@ -147,6 +193,13 @@ def load_hospitalized(db):
 
 
 def load_tests(db):
+    """
+    Loads tests as:  month | tests
+
+    Args:
+        db: Mongo DB
+
+    """
     # Tests CSV
     df_tests = pd.read_csv(CSV_FILES["tests"]["filename"],
                            usecols=lambda c: c in {'datum', 'pocet_PCR_testy', 'pocet_AG_testy'}, sep=",")
@@ -178,6 +231,16 @@ def load_tests(db):
 
 
 def load_vaccinated(db):
+    """
+    Loads vaccinated as:
+        vaccinated_regions:  region | count
+
+        vaccinated_people:  date | age_group | gender
+
+    Args:
+        db: Mongo DB
+
+    """
     # vaccinated regions
     df_vac_reg = pd.read_csv(CSV_FILES["vaccinated_regions"]["filename"],
                              usecols=lambda c: c in {'datum', 'kraj_nuts_kod'}, sep=",")
@@ -266,8 +329,6 @@ def load_vaccinated(db):
              }
         ]
     )
-
-
 
 def main():
     """
