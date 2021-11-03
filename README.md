@@ -169,6 +169,7 @@ pip3 install -r requirements.txt
 ```
 ### Spustenie:
 
+
 ```
 Príklad spustenia:
 
