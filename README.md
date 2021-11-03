@@ -87,10 +87,6 @@ Vo finálnom dotaze ***C1*** je nutné získať data o jednotlivých *mestách* 
 ⬇ https://onemocneni-aktualne.mzcr.cz/api/v2/covid-19/testy-pcr-antigenni.csv
 <br/><br/>
 
-***Kraje:*** názov ***|*** skratka ***|*** počet_obyvateľov TODO DOPLNIT
-
-⬇ ??????????????
-<br/><br/>
 
 ***Očkovanie(regiony):*** dátum ***|*** vakcína ***|*** kraj_kód ***|*** kraj_názov ***|*** veková_skupina ***|*** typy_dávok ***|*** celkom_dávok  
 
@@ -135,11 +131,6 @@ Počty hospitalizovaných osôb sú zoskupené podľa mesiacov.
 | month | tests |
 |-------|-------|
 
-***Kraje:*** TODO
-
-|      |       |       |
-|------|-------|-------|
-
 ***Očkovanie(regióny):*** pre získanie počtu očkovaní v jednotlivých krajoch sme museli vyčitiť data od nepotrebných informácií
 a následne ich zoskupiť podla krajov.
 
@@ -169,6 +160,8 @@ získať data zo spomenutého druhého zdroja a jemne očistiť data.
 
 ### Inštalácia:
 
+Inštalácia MongoDB - https://docs.mongodb.com/manual/administration/install-community/
+
 ```
 python3 -m venv ./env-upa
 source ./env-upa/bin/activate
@@ -179,5 +172,5 @@ pip3 install -r requirements.txt
 ```
 Príklad spustenia:
 
-./data_loader.py --mongo mongodb://localhost:27017/
+./data_loader.py --mongo mongodb://localhost:27017/ -f download_data_folder -d DB
 ```
