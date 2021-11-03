@@ -363,13 +363,23 @@ def main():
     download_csv(CSV_FILES["vaccinated_geography"]["url"],
                  CSV_FILES["vaccinated_geography"]["filename"])  # vaccinated geography
 
+    print("All documents downloaded. Loading into database now...")
+
     # Manually deal with each collection
     load_infected(mongo_db)
+    print("- infected loaded")
     load_cured(mongo_db)
+    print("- cured loaded")
     load_dead(mongo_db)
+    print("- dead loaded")
     load_hospitalized(mongo_db)
+    print("- hospitalized loaded")
     load_tests(mongo_db)
+    print("- tests loaded")
     load_vaccinated(mongo_db)
+    print("- vaccinated loaded")
+
+    print("All done.")
 
 
 if __name__ == '__main__':

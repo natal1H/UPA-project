@@ -172,6 +172,5 @@ pip3 install -r requirements.txt
 
 ```
 Príklad spustenia:
-
-./data_loader.py --mongo mongodb://localhost:27017/ -f download_data_folder -d DB
+python3 data_loader.py --mongo mongodb://localhost:27017/ -f download_data_folder -d DB
 ```
