@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pymongo
 from argparse import ArgumentParser
 import pandas as pd
@@ -18,6 +20,75 @@ parser = ArgumentParser(prog='UPA-data_loader')
 parser.add_argument('-m', '--mongo', help="Mongo db location",
                     default="mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000")
 parser.add_argument('-d', '--database', help="Database name", default="UPA-db")
+
+
+def B1(db):
+
+
+    # year=2020
+    pipeline = [
+        {"$match":
+            {'date':
+                 { "$regex": "^2020"}}
+        },
+        {"$project": {
+            "date": 1,
+            "district": 1,
+            "quarter": {
+                "$switch": {
+                    "branches": [
+                        {"case": {"$lte": [{"$month": {"$toDate": "$date"}}, 3]}, "then": 1},
+                        {"case": {"$lte": [{"$month": {"$toDate": "$date"}}, 6]}, "then": 2},
+                        {"case": {"$lte": [{"$month": {"$toDate": "$date"}}, 9]}, "then": 3},
+                        {"case": {"$lte": [{"$month": {"$toDate": "$date"}}, 12]}, "then": 4}]
+                }
+            }
+        }},
+        {"$group":
+            {
+                "_id": {"district": "$district", "quarter": "$quarter"},
+                "count": {"$sum": 1},
+            }
+        },
+        { "$sort": {"_id.district": 1, "_id.quarter": 1}}
+    ]
+
+    quarter_infected_2020 = db.infected.aggregate(pipeline)
+    json_data = dumps(list(quarter_infected_2020))
+    print(json_data)
+
+
+    # year=2021
+    pipeline = [
+        {"$match":
+            {'date':
+                 { "$regex": "^2021"}}
+        },
+        {"$project": {
+            "date": 1,
+            "district": 1,
+            "quarter": {
+                "$switch": {
+                    "branches": [
+                        {"case": {"$lte": [{"$month": {"$toDate": "$date"}}, 3]}, "then": 1},
+                        {"case": {"$lte": [{"$month": {"$toDate": "$date"}}, 6]}, "then": 2},
+                        {"case": {"$lte": [{"$month": {"$toDate": "$date"}}, 9]}, "then": 3},
+                        {"case": {"$lte": [{"$month": {"$toDate": "$date"}}, 12]}, "then": 4}]
+                }
+            }
+        }},
+        {"$group":
+            {
+                "_id": {"district": "$district", "quarter": "$quarter"},
+                "count": {"$sum": 1},
+            }
+        },
+        { "$sort": {"_id.district": 1, "_id.quarter": 1}}
+    ]
+
+    quarter_infected_2021 = db.infected.aggregate(pipeline)
+    json_data = dumps(list(quarter_infected_2021))
+    print(json_data)
 
 
 def A1(db):
@@ -107,7 +178,8 @@ def main():
     mongo_client = pymongo.MongoClient(args.mongo)
     mongo_db = mongo_client[args.database]
 
-    A1(mongo_db)
+    # A1(mongo_db)
+    B1(mongo_db)
 
     mongo_client.close()
 
