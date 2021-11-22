@@ -52,7 +52,7 @@ def B1(db):
     ]
 
     quarter_infected_2020 = db.infected.aggregate(pipeline)
-    json_data = dumps(list(quarter_infected_2020))
+    json_data_2020 = dumps(list(quarter_infected_2020))
     # print(json_data)
 
 
@@ -85,7 +85,7 @@ def B1(db):
     ]
 
     quarter_infected_2021 = db.infected.aggregate(pipeline)
-    json_data = dumps(list(quarter_infected_2021))
+    json_data_2021 = dumps(list(quarter_infected_2021))
     # print(json_data)
 
 
