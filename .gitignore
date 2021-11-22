@@ -1,2 +1,4 @@
 .idea/
 data/
+queries/__pycache__/
+*.csv
