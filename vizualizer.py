@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import pymongo
 from argparse import ArgumentParser
 import pandas as pd
@@ -23,7 +21,7 @@ parser.add_argument('-d', '--database', help="Database name", default="UPA-db")
 
 
 def B1(db):
-
+    # B1 task
 
     # year=2020
     pipeline = [
@@ -55,7 +53,7 @@ def B1(db):
 
     quarter_infected_2020 = db.infected.aggregate(pipeline)
     json_data = dumps(list(quarter_infected_2020))
-    print(json_data)
+    # print(json_data)
 
 
     # year=2021
@@ -88,7 +86,7 @@ def B1(db):
 
     quarter_infected_2021 = db.infected.aggregate(pipeline)
     json_data = dumps(list(quarter_infected_2021))
-    print(json_data)
+    # print(json_data)
 
 
 def A1(db):
@@ -178,7 +176,7 @@ def main():
     mongo_client = pymongo.MongoClient(args.mongo)
     mongo_db = mongo_client[args.database]
 
-    # A1(mongo_db)
+    A1(mongo_db)
     B1(mongo_db)
 
     mongo_client.close()
