@@ -4,6 +4,8 @@ import requests
 import csv
 import os
 from argparse import ArgumentParser
+import xml.etree.ElementTree as ET
+from urllib.request import urlopen
 
 """UPA - 1st part
     Theme: Covid-19
@@ -48,6 +50,19 @@ CSV_FILES = {
     "vaccinated_geography":
         {"url": "https://onemocneni-aktualne.mzcr.cz/api/v2/covid-19/ockovani-geografie.csv",
          "filename": DATA_FOLDER + "vaccinated-geography.csv"},
+    "demographic_data":
+        {"url": "https://www.czso.cz/documents/62353418/143522504/130142-21data043021.csv/760fab9c-d079-4d3a-afed-59cbb639e37d?version=1.1",
+         "filename": DATA_FOLDER + "demographic_data.csv"},
+}
+
+XML_FILES = {
+    "region_enumerator":
+        {"url": "http://apl.czso.cz/iSMS/cisexp.jsp?kodcis=100&typdat=0&cisjaz=203&format=0",
+         "filename": DATA_FOLDER + "region_enumerator.xml"},
+
+    "district_enumerator":
+        {"url": "http://apl.czso.cz/iSMS/cisexp.jsp?kodcis=101&typdat=0&cisjaz=203&format=0",
+         "filename": DATA_FOLDER + "district_enumerator.xml"},
 }
 gender_dict = {"M": "male", "Z": "female"}
 
@@ -70,6 +85,11 @@ def download_csv(url, filename):
             for line in response.iter_lines():
                 writer.writerow(line.decode('utf-8').split(','))
 
+def download_xml(url, filename):
+    if not os.path.exists(filename):
+        response = requests.get(url)
+        with open(filename, 'wb') as f:
+            f.write(response.content)
 
 def insert_df_to_mongo(db, col_name, df):
     """
@@ -330,6 +350,109 @@ def load_vaccinated(db):
         ]
     )
 
+def load_demographic_data(db):
+    """
+    Loads demographic data:
+    Args:
+        db: Mongo DB
+
+    """
+
+    # writer = csv.writer(open("demographic_data.csv", "wb"), quoting=csv.QUOTE_NONE)
+    # reader = csv.reader(open("demographic_data2.csv", "rb"), skipinitialspace=True)
+    # writer.writerows(reader)
+    df_dem_data = pd.read_csv(CSV_FILES["demographic_data"]["filename"],
+                             usecols=lambda c: c in {'idhod',
+                                                     'hodnota',
+                                                     'stapro_kod',
+                                                     'pohlavi_cis',
+                                                     'pohlavi_kod',
+                                                     'vek_cis',
+                                                     'vek_kod',
+                                                     'vuzemi_cis',
+                                                     'vuzemi_kod',
+                                                     'casref_do',
+                                                     'pohlavi_txt',
+                                                     'vek_txt',
+                                                     'vuzemi_txt'},
+                                               names=['idhod',
+                                                     'hodnota',
+                                                     'stapro_kod',
+                                                     'pohlavi_cis',
+                                                     'pohlavi_kod',
+                                                     'vek_cis',
+                                                     'vek_kod',
+                                                     'vuzemi_cis',
+                                                     'vuzemi_kod',
+                                                     'casref_do',
+                                                     'pohlavi_txt',
+                                                     'vek_txt',
+                                                     'vuzemi_txt'],
+                              sep=",", header=0)
+
+    df_dem_data = df_dem_data.replace('"', '', regex=True)
+    df_dem_data.rename(columns={'idhod': 'idhod',
+                               'hodnota': 'value',
+                               'stapro_kod': 'stapro_code',
+                               'pohlavi_cis': 'gender_enum',
+                               'pohlavi_kod': 'gender_code',
+                               'vek_cis': 'age_enum',
+                               'vek_kod': 'age_code',
+                               'vuzemi_cis': 'territory_enum',
+                               'vuzemi_kod': 'territory_code',
+                               'casref_do': 'region',
+                               'pohlavi_txt': 'gender_txt',
+                               'vek_txt': 'age_txt',
+                               'vuzemi_txt': "territory_txt"
+                               }, inplace=True)
+
+    insert_df_to_mongo(db, "demographic_data", df_dem_data)  # insert into NoSQL db
+
+def load_region_enumerator_data(db):
+
+    df_region_enumerator = pd.DataFrame(columns=['value', 'text', 'cznuts', 'ruian', 'region_shortcut'])
+
+    tree = ET.parse(XML_FILES["region_enumerator"]["filename"])
+    root = tree.getroot()
+    for POLOZKA in list(root[1]):
+        # value = POLOZKA[0].text
+        # text = POLOZKA[2].text
+        # cznuts = POLOZKA[6][0].attrib['akronym']
+        # ruian = POLOZKA[6][1].attrib['akronym']
+        # region_shortcut = POLOZKA[6][2].attrib['akronym']
+
+        data = {'value': POLOZKA[0].text,
+                'text': POLOZKA[2].text,
+                'cznuts': POLOZKA[6][0].text,
+                'ruian': POLOZKA[6][1].text,
+                'region_shortcut': POLOZKA[6][2].text}
+        df_region_enumerator = df_region_enumerator.append(data, ignore_index=True)
+
+    insert_df_to_mongo(db, "region_enumerator", df_region_enumerator)
+
+def load_district_enumerator_data(db):
+
+    df_district_enumerator = pd.DataFrame(columns=['value', 'text', 'cznuts', 'ruian', 'okres_lau', 'region_shortcut'])
+
+    tree = ET.parse(XML_FILES["district_enumerator"]["filename"])
+    root = tree.getroot()
+    for POLOZKA in list(root[1]):
+        # value = POLOZKA[0].text
+        # text = POLOZKA[2].text
+        # cznuts = POLOZKA[6][0].attrib['akronym']
+        # ruian = POLOZKA[6][1].attrib['akronym']
+        # region_shortcut = POLOZKA[6][2].attrib['akronym']
+
+        data = {'value': POLOZKA[0].text,
+                'text': POLOZKA[2].text,
+                'cznuts': POLOZKA[6][0].text,
+                'okres_lau': POLOZKA[6][1].text,
+                'ruian': POLOZKA[6][2].text,
+                'region_shortcut': POLOZKA[6][3].text}
+        df_district_enumerator = df_district_enumerator.append(data, ignore_index=True)
+
+    insert_df_to_mongo(db, "district_enumerator", df_district_enumerator)
+
 def main():
     """
     Run the data loader - downloads d
@@ -362,6 +485,14 @@ def main():
                  CSV_FILES["vaccinated_people"]["filename"])  # vaccinated regions
     download_csv(CSV_FILES["vaccinated_geography"]["url"],
                  CSV_FILES["vaccinated_geography"]["filename"])  # vaccinated geography
+    download_csv(CSV_FILES["demographic_data"]["url"],
+                 CSV_FILES["demographic_data"]["filename"])  # vaccinated geography
+
+    download_xml(XML_FILES["region_enumerator"]["url"],
+                 XML_FILES["region_enumerator"]["filename"])
+    download_xml(XML_FILES["district_enumerator"]["url"],
+                 XML_FILES["district_enumerator"]["filename"])
+
 
     print("All documents downloaded. Loading into database now...")
 
@@ -378,6 +509,12 @@ def main():
     print("- tests loaded")
     load_vaccinated(mongo_db)
     print("- vaccinated loaded")
+    load_demographic_data(mongo_db)
+    print("- demographic data loaded")
+    load_region_enumerator_data(mongo_db)
+    print("- region enumerator data loaded")
+    load_district_enumerator_data(mongo_db)
+    print("- district enumerator data loaded")
 
     print("All done.")
 
