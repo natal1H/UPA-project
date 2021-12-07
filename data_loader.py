@@ -53,6 +53,9 @@ CSV_FILES = {
     "demographic_data":
         {"url": "https://www.czso.cz/documents/62353418/143522504/130142-21data043021.csv/760fab9c-d079-4d3a-afed-59cbb639e37d?version=1.1",
          "filename": DATA_FOLDER + "demographic_data.csv"},
+    "vaccinated_by_profession":
+        {"url": "https://onemocneni-aktualne.mzcr.cz/api/v2/covid-19/ockovani-profese.csv",
+         "filename": DATA_FOLDER + "vaccinated_by_profession.csv"},
 }
 
 XML_FILES = {
@@ -300,55 +303,55 @@ def load_vaccinated(db):
 
     if 'A3_view' in db.list_collection_names():
         db['A3_view'].drop()
-    db.create_collection(
-        'A3_view',
-        viewOn='vaccinated_geography',
-        pipeline=[{
-            '$lookup': {
-                'from': "vaccinated_people",
-                'localField': "date",
-                'foreignField': "date",
-                'as': "vaccinated_people_data"
-            }
-        },
-            {
-                '$unwind': "$vaccinated_people_data"
-            },
-            {"$project": {"date": 1,
-                          'region': 1,
-                          'kraj_nuts_kod': '$vaccinated_people_data.kraj_nuts_kod',
-                          'vaccine code': 1,
-                          'age_group': '$vaccinated_people_data.age_group'}
-             }
-        ]
-    )
-
+    # db.create_collection(
+    #     'A3_view',
+    #     viewOn='vaccinated_geography',
+    #     pipeline=[{
+    #         '$lookup': {
+    #             'from': "vaccinated_people",
+    #             'localField': "date",
+    #             'foreignField': "date",
+    #             'as': "vaccinated_people_data"
+    #         }
+    #     },
+    #         {
+    #             '$unwind': "$vaccinated_people_data"
+    #         },
+    #         {"$project": {"date": '$vaccinated_people_data.date',
+    #                       'region': 1,
+    #                       'vaccine code': 1,
+    #                       'gender': '$vaccinated_people_data.gender',
+    #                       'age_group': '$vaccinated_people_data.age_group'}
+    #          }
+    #     ]
+    # )
+    #
     if 'C1_view' in db.list_collection_names():
         db['C1_view'].drop()
-
-    db.create_collection(
-        'C1_view',
-        viewOn='A3_view',
-        pipeline=[{
-            '$lookup': {
-                'from': "infected",
-                'localField': "date",
-                'foreignField': "date",
-                'as': "infected_data"
-            }
-        },
-            {
-                '$unwind': "$infected_data"
-            },
-            {"$project": {"date": 1,
-                          'region': 1,
-                          'kraj_nuts_kod': 1,
-                          'district': '$infected_data.district',
-                          'vaccine code': 1,
-                          'age_group': 1}
-             }
-        ]
-    )
+    #
+    # db.create_collection(
+    #     'C1_view',
+    #     viewOn='A3_view',
+    #     pipeline=[{
+    #         '$lookup': {
+    #             'from': "infected",
+    #             'localField': "region",
+    #             'foreignField': "region",
+    #             'as': "infected_data"
+    #         }
+    #     },
+    #         {
+    #             '$unwind': "$infected_data"
+    #         },
+    #         {"$project": {"date": 1,
+    #                       'region': '$infected_data.region',
+    #                       'kraj_nuts_kod': 1,
+    #                       'district': 1,
+    #                       'vaccine code': 1,
+    #                       'age_group': 1}
+    #          }
+    #     ]
+    # )
 
 def load_demographic_data(db):
     """
@@ -358,9 +361,6 @@ def load_demographic_data(db):
 
     """
 
-    # writer = csv.writer(open("demographic_data.csv", "wb"), quoting=csv.QUOTE_NONE)
-    # reader = csv.reader(open("demographic_data2.csv", "rb"), skipinitialspace=True)
-    # writer.writerows(reader)
     df_dem_data = pd.read_csv(CSV_FILES["demographic_data"]["filename"],
                              usecols=lambda c: c in {'idhod',
                                                      'hodnota',
@@ -408,6 +408,47 @@ def load_demographic_data(db):
 
     insert_df_to_mongo(db, "demographic_data", df_dem_data)  # insert into NoSQL db
 
+
+def load_vaccinated_by_profession(db):
+    """
+    Loads demographic data:
+    Args:
+        db: Mongo DB
+
+    """
+
+    df_dem_data = pd.read_csv(CSV_FILES["vaccinated_by_profession"]["filename"],
+                             usecols=lambda c: c in {
+                                                 'datum',
+                                                 'vakcina',
+                                                 'kraj_nuts_kod',
+                                                 'kraj_nazev',
+                                                 'zarizeni_kod',
+                                                 'zarizeni_nazev',
+                                                 'poradi_davky',
+                                                 # 'indikace_zdravotnik',
+                                                 # 'indikace_socialni_sluzby',
+                                                 # 'indikace_ostatni',
+                                                 # 'indikace_pedagog',
+                                                 # 'indikace_skolstvi_ostatni',
+                                                 # 'indikace_bezpecnostni_infrastruktura',
+                                                 # 'indikace_chronicke_onemocneni',
+                                                 'vekova_skupina',
+                                                 'orp_bydliste',
+                                                 'orp_bydliste_kod',
+                                                 # 'prioritni_skupina_kod',
+                                                 'pohlavi',
+                                                 # 'zrizovatel_kod',
+                                                 # 'zrizovatel_nazev',
+                                                 'vakcina_kod',
+                                                 'ukoncujici_davka',
+                                                 # 'bez_registrace'
+                                                },
+                              sep=",", header=0)
+
+
+    insert_df_to_mongo(db, "vaccinated_by_profession", df_dem_data)  # insert into NoSQL db
+
 def load_region_enumerator_data(db):
 
     df_region_enumerator = pd.DataFrame(columns=['value', 'text', 'cznuts', 'ruian', 'region_shortcut'])
@@ -437,11 +478,6 @@ def load_district_enumerator_data(db):
     tree = ET.parse(XML_FILES["district_enumerator"]["filename"])
     root = tree.getroot()
     for POLOZKA in list(root[1]):
-        # value = POLOZKA[0].text
-        # text = POLOZKA[2].text
-        # cznuts = POLOZKA[6][0].attrib['akronym']
-        # ruian = POLOZKA[6][1].attrib['akronym']
-        # region_shortcut = POLOZKA[6][2].attrib['akronym']
 
         data = {'value': POLOZKA[0].text,
                 'text': POLOZKA[2].text,
@@ -452,6 +488,58 @@ def load_district_enumerator_data(db):
         df_district_enumerator = df_district_enumerator.append(data, ignore_index=True)
 
     insert_df_to_mongo(db, "district_enumerator", df_district_enumerator)
+
+def create_indexes(db):
+
+    # TODO dorobit pre vsetky kolekcie
+    def infected_indexes():
+        ...
+    def cured_indexes():
+        ...
+    def dead_indexes():
+        ...
+    def hospitalized_indexes():
+        ...
+    def tests_indexes():
+        ...
+    def vaccinated_indexes():
+        ...
+    def demographic_data_indexes():
+        ...
+    def region_enumerator_data_indexes():
+        ...
+    def district_enumerator_data_indexes():
+        ...
+
+    def vaccinated_by_profession_indexes():
+
+        # print(db.vaccinated_by_profession.index_information())
+
+        # db.vaccinated_by_profession.drop_index('index_region_date')
+        # db.vaccinated_by_profession.drop_index('index_date')
+
+        db.vaccinated_by_profession.create_index([('kraj_nuts_kod', pymongo.ASCENDING),
+                                                  ('datum', pymongo.ASCENDING),
+                                                  ('pohlavi', pymongo.ASCENDING),
+                                                  ('vekova_skupina', pymongo.ASCENDING)
+                                                  ],
+                                                   name='index_region_date')
+
+        db.vaccinated_by_profession.create_index('datum', name='index_date')
+
+        # print(db.vaccinated_by_profession.index_information())
+
+    infected_indexes()
+    cured_indexes()
+    dead_indexes()
+    hospitalized_indexes()
+    tests_indexes()
+    vaccinated_indexes()
+    demographic_data_indexes()
+    region_enumerator_data_indexes()
+    district_enumerator_data_indexes()
+    vaccinated_by_profession_indexes()
+
 
 def main():
     """
@@ -487,6 +575,8 @@ def main():
                  CSV_FILES["vaccinated_geography"]["filename"])  # vaccinated geography
     download_csv(CSV_FILES["demographic_data"]["url"],
                  CSV_FILES["demographic_data"]["filename"])  # vaccinated geography
+    download_csv(CSV_FILES["vaccinated_by_profession"]["url"],
+                 CSV_FILES["vaccinated_by_profession"]["filename"])  # vaccinated
 
     download_xml(XML_FILES["region_enumerator"]["url"],
                  XML_FILES["region_enumerator"]["filename"])
@@ -515,6 +605,11 @@ def main():
     print("- region enumerator data loaded")
     load_district_enumerator_data(mongo_db)
     print("- district enumerator data loaded")
+    load_vaccinated_by_profession(mongo_db)
+    print("- load_vaccinated by profession loaded")
+
+    # Create indexes for each collection
+    create_indexes(mongo_db)
 
     print("All done.")
 
