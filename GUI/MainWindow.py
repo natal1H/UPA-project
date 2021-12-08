@@ -17,7 +17,7 @@ from queries.A1 import A1_plot_graph
 class Ui_UPA_Covid19(object):
     def setupUi(self, UPA_Covid19):
         UPA_Covid19.setObjectName("UPA_Covid19")
-        UPA_Covid19.resize(1008, 811)
+        UPA_Covid19.resize(2000, 1200)
         UPA_Covid19.setStyleSheet("background-color: #202124;")
         self.centralwidget = QtWidgets.QWidget(UPA_Covid19)
         self.centralwidget.setObjectName("centralwidget")
@@ -254,7 +254,7 @@ class Ui_UPA_Covid19(object):
     def A1_plot(self):
         """
         """
-        self.plot_image.setPixmap(QPixmap("../Plots/A1.png"))
+        self.plot_image.setPixmap(QPixmap("Plots/A1.png"))
         self.plot_comment.setText("A1 TEXT")
 
     def A3_plot(self):
