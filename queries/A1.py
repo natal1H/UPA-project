@@ -103,4 +103,4 @@ def A1_plot_graph(csv_location="A1.csv"):
     plt.xlabel("Month", labelpad=15)
     plt.ylabel("Count", labelpad=15)
 
-    plt.show()
+    plt.savefig("Plots/A1.png")
