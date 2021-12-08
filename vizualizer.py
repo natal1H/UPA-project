@@ -1,7 +1,7 @@
 import pymongo
 from argparse import ArgumentParser
 from queries.A1 import A1_extract_csv, A1_plot_graph
-from queries.B1 import B1
+from queries.B1 import b1
 
 """UPA - 2nd part
     Theme: Covid-19
@@ -24,8 +24,8 @@ def main():
     mongo_db = mongo_client[args.database]
 
     A1_extract_csv(mongo_db, "A1.csv")
-    A1_plot_graph("A1.csv")
-    B1(mongo_db)
+    A1_plot_graph("A1.csv", "A1.png")
+    #B1(mongo_db)
 
     mongo_client.close()
 

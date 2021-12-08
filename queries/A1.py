@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from bson.json_util import dumps
 import re
 import json
+import seaborn as sns
 
 """UPA - 2nd part
     Theme: Covid-19
@@ -91,16 +92,24 @@ def A1_extract_csv(db, csv_location="A1.csv"):
     merged = pd.merge(merged, df_hospitalized, how='outer', on='month')
     merged = pd.merge(merged, df_tests, how='outer', on='month')
     merged = merged.sort_values(by=['month'], ascending=True)
-
+    merged = merged.set_index('month')
     merged.to_csv(csv_location, sep=';', encoding='utf-8')
 
 
-def A1_plot_graph(csv_location="A1.csv"):
+def A1_plot_graph(csv_location="A1.csv", save_location=""):
+    sns.set_style("darkgrid")
+
     df = pd.read_csv(csv_location, sep=";", encoding="utf-8")
+    print(df.head())
+    fig, ax = plt.subplots(figsize=(12, 8))
+    g = sns.lineplot(x='month', y='value', hue='variable', data=pd.melt(df, ['month']), ax=ax)
+    g.set_yscale("log")
+    g.set_xlabel("Mesiac", fontsize=20)
+    g.set_ylabel("Počet", fontsize=20)
+    plt.legend(title='', loc='upper left', labels=['Nakazení', 'Vyliečení', 'Hospitalizovaní', 'Testy'], fontsize=15)
+    plt.title("Vývoj covidovej situácie v Česku po mesiacoch", fontsize=30)
+    plt.xticks(rotation=45)
 
-    df.plot(x="month", y=["infected", "cured", "hospitalized", "tests"], logy=True)
-    plt.title("A1")
-    plt.xlabel("Month", labelpad=15)
-    plt.ylabel("Count", labelpad=15)
-
-    plt.savefig("Plots/A1.png")
+    if len(save_location) > 0:
+        plt.savefig(save_location)
+    plt.show()

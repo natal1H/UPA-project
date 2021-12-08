@@ -3,7 +3,7 @@ import pymongo
 from bson.json_util import dumps
 import json
 
-def a3(db):
+def A3_extract_csv(db, csv_location="A3.csv"):
     pipeline = [
         {"$match":
              {'pohlavi':
@@ -39,3 +39,5 @@ def a3(db):
 
     df = df[df['cznuts'].notna()]
 
+def A3_plot_graph(csv_location="A3.csv", save_location="A3.png"):
+    pass
