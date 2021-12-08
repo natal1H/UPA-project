@@ -2,6 +2,9 @@ import pandas as pd
 import pymongo
 from bson.json_util import dumps
 import json
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 
 def A3_extract_csv(db, csv_location="A3.csv"):
     pipeline = [
@@ -38,7 +41,7 @@ def A3_extract_csv(db, csv_location="A3.csv"):
     pipeline = [
         {"$project": {
             "cznuts": 1,
-            "text": 1
+            "region_shortcut": 1
         }}
     ]
 
@@ -49,8 +52,8 @@ def A3_extract_csv(db, csv_location="A3.csv"):
 
     # Rename region codes in vaccinated dataframe to actual text names
     for region_code in df_regions['cznuts'].unique():
-        text_name = df_regions[df_regions["cznuts"] == region_code]["text"].values[0]
-        df_vaccinated['cznuts'] = [text_name if code == region_code else code for code in df_vaccinated['cznuts']]
+        shortcut = df_regions[df_regions["cznuts"] == region_code]["region_shortcut"].values[0]
+        df_vaccinated['cznuts'] = [shortcut if code == region_code else code for code in df_vaccinated['cznuts']]
 
     # Rename columns in vaccinated dataframe
     df_vaccinated = df_vaccinated.rename(columns={"cznuts": "region", "_id.pohlavi": "gender",
@@ -60,4 +63,72 @@ def A3_extract_csv(db, csv_location="A3.csv"):
 
 
 def A3_plot_graph(csv_location="A3.csv", save_location="A3.png"):
-    pass
+    sns.set_style("darkgrid")
+
+    # Load extracted data
+    df = pd.read_csv(csv_location, sep=";", encoding="utf-8")
+
+    fig, axes = plt.subplots(1, 3, figsize=(18, 8))
+    fig.suptitle('Očkovanie v krajoch', fontsize=30)
+    # Graph 1 - Total number of vaccinations in each region
+    df_graph1 = df.groupby(['region'])['count'].sum().reset_index()
+
+    g = sns.barplot(ax=axes[0], x='region', y='count', data=df_graph1)
+    g.set_xlabel("Kraj", fontsize=20)
+    g.set_ylabel("Počet očkovaných", fontsize=20)
+    plt.setp(axes[0].xaxis.get_majorticklabels(), rotation=45)
+
+    # Graph 2 - Total number of vaccinations, number of vaccinations by gender in each region
+    df_gender = df.groupby(['region', 'gender'])['count'].sum().reset_index()  # Count vaccinations by gender
+    # Prepare df used in plotting, will have total, male, and female vaccination counts
+    df_graph2 = pd.DataFrame({'region': pd.Series(dtype='str'), 'total': pd.Series(dtype='int'),
+                              'male': pd.Series(dtype='int'), 'female': pd.Series(dtype='int')})
+    for region_name in df_gender['region'].unique():
+        total = df_graph1[df_graph1['region'] == region_name]['count'].values[0]  # Total number of vaccinations
+        male = df_gender[(df_gender['region'] == region_name) & (df_gender['gender'] == 'M')]['count'].values[0]
+        female = df_gender[(df_gender['region'] == region_name) & (df_gender['gender'] == 'Z')]['count'].values[0]
+        df_graph2 = df_graph2.append({"region": region_name, "total": total, "male": male,
+                                      "female": female}, ignore_index=True)
+
+    labels = ["Celkovo", "Muži", "Ženy"]
+
+    g = sns.barplot(x='region', y='value', hue='variable', data=pd.melt(df_graph2, ['region']), ax=axes[1])
+    g.set_xlabel("Kraj", fontsize=20)
+    g.set_ylabel("")
+    h, l = axes[1].get_legend_handles_labels()
+    axes[1].legend(h, labels, loc='upper left', title="", fontsize=15)
+    plt.setp(axes[1].xaxis.get_majorticklabels(), rotation=45)
+
+    # Graph 3 - Total number of vaccinations, number of vaccinations by age group in each region
+    df_age = df.groupby(['region', 'age_group'])['count'].sum().reset_index()
+    # Need to again count those in the same category (0-24, 25-59, 59+)
+    group1 = ['0-11', '12-15', '16-17', '18-24']  # Kids & young
+    group2 = ['25-29', '30-34', '35-39', '40-44', '45-49', '50-54', '55-59']  # Adults
+    group3 = ['60-64', '65-69', '70-79', '80+']  # Elderly
+    # Prepare dataset used in plotting
+    df_graph3 = pd.DataFrame({'region': pd.Series(dtype='str'), 'total': pd.Series(dtype='int'),
+                              'group1': pd.Series(dtype='int'), 'group2': pd.Series(dtype='int'),
+                              'group3': pd.Series(dtype='int')})
+    for region_name in df_age['region'].unique():
+        total = df_graph1[df_graph1['region'] == region_name]['count'].values[0]  # Total number of vaccinations
+        num_group1 = df_age[(df_age['region'] == region_name) & (df_age['age_group'].isin(group1))]["count"].sum()
+        num_group2 = df_age[(df_age['region'] == region_name) & (df_age['age_group'].isin(group2))]["count"].sum()
+        num_group3 = df_age[(df_age['region'] == region_name) & (df_age['age_group'].isin(group3))]["count"].sum()
+
+        df_graph3 = df_graph3.append({"region": region_name, "total": total, "group1": num_group1, "group2": num_group2,
+                                      "group3": num_group3}, ignore_index=True)
+
+    labels = ["Celkovo", "Deti a mladí", "Dospelí", "Starší"]
+
+    g = sns.barplot(x='region', y='value', hue='variable', data=pd.melt(df_graph3, ['region']), ax=axes[2])
+    g.set_xlabel("Kraj", fontsize=20)
+    g.set_ylabel("")
+    h, l = axes[2].get_legend_handles_labels()
+    axes[2].legend(h, labels, loc='upper left', title="", fontsize=15)
+    plt.setp(axes[2].xaxis.get_majorticklabels(), rotation=45)
+
+    fig.tight_layout()
+    if len(save_location) > 0:
+        plt.savefig(save_location)
+    plt.show()
+
