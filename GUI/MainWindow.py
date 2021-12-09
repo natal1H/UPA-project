@@ -245,7 +245,7 @@ class Ui_UPA_Covid19(object):
         UPA_Covid19.setWindowTitle(_translate("UPA_Covid19", "UPA - Covid 19"))
         self.A1.setText(_translate("UPA_Covid19", "A1"))
         self.A3.setText(_translate("UPA_Covid19", "A3"))
-        self.B2.setText(_translate("UPA_Covid19", "B2"))
+        self.B2.setText(_translate("UPA_Covid19", "B1"))
         self.C1.setText(_translate("UPA_Covid19", "C1"))
         self.VL1.setText(_translate("UPA_Covid19", "Vlastné 1"))
         self.VL2.setText(_translate("UPA_Covid19", "Vlastné 2"))
@@ -266,8 +266,8 @@ class Ui_UPA_Covid19(object):
     def B2_plot(self):
         """
         """
-        self.plot_image.setPixmap(QPixmap("../Plots/B2.png"))
-        self.plot_comment.setText("B2 TEXT")
+        self.plot_image.setPixmap(QPixmap("../Plots/B1.png"))
+        self.plot_comment.setText("B1 TEXT")
 
     def C1_plot(self):
         """
