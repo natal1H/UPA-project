@@ -16,16 +16,18 @@ parser.add_argument('-d', '--database', help="Database name", default="UPA-db")
 
 
 def main():
+    # TODO nejde to lebo QTpy to vadi takto treba najrprv spustit skript vizualize a potom az zapat GUI
+    
     args = parser.parse_args()
     # MongoDB connection
     mongo_client = pymongo.MongoClient(args.mongo)
     mongo_db = mongo_client[args.database]
 
     A1_extract_csv(mongo_db, "A1.csv")
-    A1_plot_graph("A1.csv", "A1.png")
+    A1_plot_graph("A1.csv", "Plots/A1.png")
     A3_extract_csv(mongo_db, "A3.csv")
-    A3_plot_graph("A3.csv", "A3.png")
-    b1(mongo_db)
+    A3_plot_graph("A3.csv", "Plots/A3.png")
+    #b1(mongo_db)
 
     mongo_client.close()
 
