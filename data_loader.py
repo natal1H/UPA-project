@@ -400,7 +400,7 @@ def load_demographic_data(db):
                                'vek_kod': 'age_code',
                                'vuzemi_cis': 'territory_enum',
                                'vuzemi_kod': 'territory_code',
-                               'casref_do': 'region',
+                               'casref_do': 'valid_date',
                                'pohlavi_txt': 'gender_txt',
                                'vek_txt': 'age_txt',
                                'vuzemi_txt': "territory_txt"
