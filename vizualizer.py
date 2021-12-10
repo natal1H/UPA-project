@@ -2,7 +2,7 @@ import pymongo
 from argparse import ArgumentParser
 from queries.A1 import A1_extract_csv, A1_plot_graph
 from queries.A3 import A3_extract_csv, A3_plot_graph
-from queries.B1 import b1
+from queries.B1 import B1_extract_csv, B1_plot_graph
 from queries.C1 import c1
 
 """UPA - 2nd part
@@ -29,10 +29,9 @@ def main():
     A1_plot_graph("A1.csv", "A1.png")
     A3_extract_csv(mongo_db, "A3.csv")
     A3_plot_graph("A3.csv", "A3.png")
-    b1(mongo_db)
+    B1_extract_csv(mongo_db)
+    B1_plot_graph("B1.png")
     c1(mongo_db)
-
-
 
     mongo_client.close()
 
