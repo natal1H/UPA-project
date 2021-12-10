@@ -1,14 +1,15 @@
 import pandas as pd
 import pymongo
+from argparse import ArgumentParser
 from bson.json_util import dumps
 import json
 from matplotlib import pyplot as plt
 import seaborn as sns
 
+"""UPA - 2nd part
+    Theme: Covid-19
 
-def B1_extract_csv(db):
-    """
-    B1 description:
+    Operations with query B1:
     Sestavte 4 žebříčky krajů "best in covid" za poslední 4 čtvrtletí (1 čtvrtletí = 1 žebříček).
     Jako kritérium volte počet nově nakažených přepočtený na jednoho obyvatele kraje.
     Pro jedno čtvrtletí zobrazte výsledky také graficky.
@@ -18,7 +19,20 @@ def B1_extract_csv(db):
         - počet nakažených na jednoho obyvatele.  -----> (jeden čárový graf)
     Graf můžete zhotovit kombinací dvou grafů do jednoho
         (jeden sloupcový graf zobrazí první dvě hodnoty a druhý, čárový graf, hodnotu třetí).
-    """
+
+    Authors: 
+        - Filip Bali (xbalif00)
+        - Natália Holková (xholko02)
+        - Roland Žitný (xzitny01)
+"""
+
+parser = ArgumentParser(prog='UPA-data_loader')
+parser.add_argument('-m', '--mongo', help="Mongo db location",
+                    default="mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000")
+parser.add_argument('-d', '--database', help="Database name", default="UPA-db")
+
+
+def B1_extract_csv(db):
     # TODO Q3-2020 - Q3-2021
 
     pipeline = [
@@ -221,3 +235,13 @@ def B1_plot_graph(save_location="B1.png"):
     plt.show()
 
 
+if __name__ == "__main__":
+    args = parser.parse_args()
+    # MongoDB connection
+    mongo_client = pymongo.MongoClient(args.mongo)
+    mongo_db = mongo_client[args.database]
+
+    B1_extract_csv(mongo_db)
+    B1_plot_graph("B1.png")
+
+    mongo_client.close()

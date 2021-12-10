@@ -4,6 +4,29 @@ from bson.json_util import dumps
 import json
 import seaborn as sns
 import matplotlib.pyplot as plt
+from argparse import ArgumentParser
+
+"""UPA - 2nd part
+    Theme: Covid-19
+
+    Operations with query A3:
+    Vytvořte sérii sloupcových grafů, které zobrazí:
+        1. graf: počty provedených očkování v jednotlivých krajích (celkový počet od začátku očkování).
+        2. graf: počty provedených očkování jako v předchozím bodě navíc rozdělené podle pohlaví. 
+                 Diagram může mít např. dvě části pro jednotlivá pohlaví.
+        3. graf: Počty provedených očkování, ještě dále rozdělené dle věkové skupiny. 
+                 Pro potřeby tohoto diagramu postačí 3 věkové skupiny (0-24 let, 25-59, nad 59).
+
+    Authors: 
+        - Filip Bali (xbalif00)
+        - Natália Holková (xholko02)
+        - Roland Žitný (xzitny01)
+"""
+
+parser = ArgumentParser(prog='UPA-data_loader')
+parser.add_argument('-m', '--mongo', help="Mongo db location",
+                    default="mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000")
+parser.add_argument('-d', '--database', help="Database name", default="UPA-db")
 
 
 def A3_extract_csv(db, csv_location="A3.csv"):
@@ -131,4 +154,16 @@ def A3_plot_graph(csv_location="A3.csv", save_location="A3.png"):
     if len(save_location) > 0:
         plt.savefig(save_location)
     plt.show()
+
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    # MongoDB connection
+    mongo_client = pymongo.MongoClient(args.mongo)
+    mongo_db = mongo_client[args.database]
+
+    A3_extract_csv(mongo_db, "A3.csv")
+    A3_plot_graph("A3.csv", "A3.png")
+
+    mongo_client.close()
 

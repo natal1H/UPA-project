@@ -1,4 +1,5 @@
 import pymongo
+from argparse import ArgumentParser
 import pandas as pd
 import matplotlib.pyplot as plt
 from bson.json_util import dumps
@@ -20,6 +21,11 @@ import seaborn as sns
         - Natália Holková (xholko02)
         - Roland Žitný (xzitny01)
 """
+
+parser = ArgumentParser(prog='UPA-data_loader')
+parser.add_argument('-m', '--mongo', help="Mongo db location",
+                    default="mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000")
+parser.add_argument('-d', '--database', help="Database name", default="UPA-db")
 
 
 def A1_extract_csv(db, csv_location="A1.csv"):
@@ -113,3 +119,15 @@ def A1_plot_graph(csv_location="A1.csv", save_location=""):
     if len(save_location) > 0:
         plt.savefig(save_location)
     plt.show()
+
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    # MongoDB connection
+    mongo_client = pymongo.MongoClient(args.mongo)
+    mongo_db = mongo_client[args.database]
+
+    A1_extract_csv(mongo_db, "A1.csv")
+    A1_plot_graph("A1.csv", "A1.png")
+
+    mongo_client.close()
