@@ -101,7 +101,7 @@ def B1_extract_csv(db):
 
     df_demo_sum = df_demo.groupby('territory_code')['value'].sum()
     df_demo_sum = df_demo_sum.reset_index()
-    df_demo_sum= df_demo_sum.rename(columns={"territory_code": "value", "value": "population"})
+    df_demo_sum = df_demo_sum.rename(columns={"territory_code": "value", "value": "population"})
     df_demo_sum['value'] = df_demo_sum['value'].astype(int)
 
 
@@ -167,31 +167,54 @@ def B1_extract_csv(db):
 def B1_plot_graph(save_location="B1.png"):
     sns.set_style("darkgrid")
 
-    # Load csv first
+    # Load csv first, rename columns for later mergin, drop unnecessary columns
     df_q1 = pd.read_csv('B1_Q1.csv', sep=";", encoding="utf-8")
+    df_q1 = df_q1.rename(columns={"infected": "infected_q1", "infected_normalized": "infected_normalized_q1"})
+    df_q1 = df_q1.drop(['cznuts', 'value', 'quarter'], axis=1)
     df_q2 = pd.read_csv('B1_Q2.csv', sep=";", encoding="utf-8")
+    df_q2 = df_q2.rename(columns={"infected": "infected_q2", "infected_normalized": "infected_normalized_q2"})
+    df_q2 = df_q2.drop(['cznuts', 'value', 'quarter'], axis=1)
     df_q3 = pd.read_csv('B1_Q3.csv', sep=";", encoding="utf-8")
+    df_q3 = df_q3.rename(columns={"infected": "infected_q3", "infected_normalized": "infected_normalized_q3"})
+    df_q3 = df_q3.drop(['cznuts', 'value', 'quarter'], axis=1)
     df_q4 = pd.read_csv('B1_Q4.csv', sep=";", encoding="utf-8")
+    df_q4 = df_q4.rename(columns={"infected": "infected_q4", "infected_normalized": "infected_normalized_q4"})
+    df_q4 = df_q4.drop(['cznuts', 'value', 'quarter'], axis=1)
 
-    fig, axes = plt.subplots(4, 2, figsize=(14, 18))
-    axes = axes.flatten()
-    fig.suptitle("\"Best in covid\" za posledné 4 štvrťročia", fontsize=30)
+    # Merge dataframes into one
+    df_merged = pd.merge(df_q1, df_q2, on=['region_shortcut', 'population'])
+    df_merged = pd.merge(df_merged, df_q3, on=['region_shortcut', 'population'])
+    df_merged = pd.merge(df_merged, df_q4, on=['region_shortcut', 'population'])
 
-    idx = 0
-    for df_q in [df_q1, df_q2, df_q3, df_q4]:
-        # 1st graph - bar plots of newly infected and total population of region
-        df_graph1 = df_q[['region_shortcut', 'infected', 'population']]
-        df_graph1 = df_graph1.astype({"infected": int, "population": int})
-        df_graph1.reset_index()
-        g = sns.barplot(x='region_shortcut', y='value', hue='variable',
-                        data=pd.melt(df_graph1, ['region_shortcut']), ax=axes[idx])
-        g.set_yscale("log")
+    fig, axes = plt.subplots(2, 1, figsize=(18, 18))
+    fig.suptitle("\"Best in covid\" za posledné 4 štvrťroky", fontsize=40)
+    # 1st graph - select necessary columns from merged dataframe (region population and newly infected
+    df_graph1 = df_merged[["region_shortcut", "population", "infected_q1", "infected_q2", "infected_q3", "infected_q4"]]
 
-        # 2nd graph - line plot of infected per 1 inhabitant
-        df_graph2 = df_q[["region_shortcut", "infected_normalized"]]
-        g = sns.lineplot(data=df_graph2, x="region_shortcut", y="infected_normalized", ax=axes[idx + 1])
+    # Graph designing
+    g = sns.barplot(x='region_shortcut', y='value', hue='variable', data=pd.melt(df_graph1, ['region_shortcut']), ax=axes[0])
+    g.set_xlabel("Kraj", fontsize=20)
+    g.set_ylabel("Počet", fontsize=20)
+    g.set_title("Vývoj počtu novo nakazených vzhľadom na populáciu kraja", fontsize=30)
+    g.set_yscale("log")
+    labels = ["Populácia kraja", "Nakazení Q1", "Nakazení Q2", "Nakazení Q3", "Nakazení Q4"]
+    h, l = axes[0].get_legend_handles_labels()
+    axes[0].legend(h, labels, loc='upper left', title="", fontsize=15)
+    plt.setp(axes[0].xaxis.get_majorticklabels(), rotation=45)
 
-        idx += 2
+    # 2nd graph - select necessary columns from merged dataframe (infected per 1 inhabitant)
+    df_graph2 = df_merged[["region_shortcut", "infected_normalized_q1", "infected_normalized_q2",
+                           "infected_normalized_q3", "infected_normalized_q4"]]
+
+    # Graph designing
+    g = sns.lineplot(x='region_shortcut', y='value', hue='variable', data=pd.melt(df_graph2, ['region_shortcut']), ax=axes[1])
+    g.set_xlabel("Kraj", fontsize=20)
+    g.set_ylabel("Počet nakazených na 1 obyvateľa", fontsize=20)
+    g.set_title("Vývoj počtu nakazených na 1 obyvateľa v krajoch", fontsize=30)
+    labels = ["Nakazení na 1 obyvateľa Q1", "Nakazení na 1 obyvateľa Q2", "Nakazení na 1 obyvateľa Q3", "Nakazení na 1 obyvateľa Q4"]
+    h, l = axes[1].get_legend_handles_labels()
+    axes[1].legend(h, labels, loc='upper left', title="", fontsize=15)
+    plt.setp(axes[1].xaxis.get_majorticklabels(), rotation=45)
 
     if len(save_location) > 0:
         plt.savefig(save_location)
