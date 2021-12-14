@@ -266,13 +266,28 @@ def load_vaccinated(db):
     """
     # vaccinated regions
     df_vac_reg = pd.read_csv(CSV_FILES["vaccinated_regions"]["filename"],
-                             usecols=lambda c: c in {'datum', 'kraj_nuts_kod'}, sep=",")
-    df_vac_reg.rename(columns={'datum': 'date', 'kraj_nuts_kod': 'region'}, inplace=True)
-    grouped_vac_reg = df_vac_reg.groupby(["region"]).count()
-    grouped_vac_reg = grouped_vac_reg.reset_index()
-    grouped_vac_reg = grouped_vac_reg.rename(columns={'date': 'vaccinated'})
+                             usecols=lambda c: c in {'datum',
+                                                     'vakcina',
+                                                     'kraj_nuts_kod',
+                                                     'kraj_nazev',
+                                                     'vekova_skupina',
+                                                     'prvnich_davek',
+                                                     'druhych_davek',
+                                                     'celkem_davek'
+                                                     }, sep=",")
 
-    insert_df_to_mongo(db, "vaccinated_regions", grouped_vac_reg)  # insert into NoSQL db
+
+    df_vac_reg.rename(columns={'datum': 'date',
+                               # 'vakcina': 'vaccine_name',
+                               'kraj_nuts_kod': 'cznuts',
+                               'kraj_nazev': 'region_name',
+                               'vekova_skupina': 'age_group',
+                               'prvnich_davek': 'firts shots',
+                               'druhych_davek': 'second shots',
+                               'celkem_davek': 'total shots'
+                               }, inplace=True)
+
+    insert_df_to_mongo(db, "vaccinated_regions", df_vac_reg)  # insert into NoSQL db
 
     # vaccinated people
     # (date, age_group, gender)
@@ -292,11 +307,24 @@ def load_vaccinated(db):
     # (date, region, vaccine code)
     df_vac_geo = pd.read_csv(CSV_FILES["vaccinated_geography"]["filename"],
                              usecols=lambda c: c in {'datum',
+                                                     'vakcina',
+                                                     'vakcina_kod',
+                                                     'poradi_davky',
+                                                     'kraj_nazev',
                                                      'kraj_nuts_kod',
-                                                     'vakcina_kod'}, sep=",")
-    df_vac_geo.rename(columns={'datum': 'date',
-                               'kraj_nuts_kod': 'region',
-                               'vakcina_kod': "vaccine code"
+                                                     'orp_bydliste',
+                                                     'orp_bydliste_kod',
+                                                     'pocet_davek',
+                                                     }, sep=",")
+    df_vac_geo.rename(columns={'datum' : 'date',
+                             'vakcina'  : 'vaccine_name',
+                             'vakcina_kod' : 'vaccine_code',
+                             'poradi_davky' : 'shot_order',
+                             'kraj_nazev' : 'region_name',
+                             'kraj_nuts_kod' : 'cznuts',
+                             'orp_bydliste' : 'district_name',
+                             'orp_bydliste_kod': 'orp',
+                             'pocet_davek' : 'shot_count'
                                }, inplace=True)
 
     insert_df_to_mongo(db, "vaccinated_geography", df_vac_geo)  # insert into NoSQL db
