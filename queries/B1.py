@@ -94,6 +94,12 @@ def B1_extract_csv(db):
     df_demo = pd.json_normalize(demo)
     df_demo = df_demo.drop(columns='_id.$oid')
 
+    # Removes duplicate values in the dataset
+    # Selects only sums of regions/districts
+    # In the dataset, null means sum
+    df_demo = df_demo[df_demo['gender_code'].isnull() &
+                      df_demo['age_code'].isnull()]
+
     df_demo = df_demo[(df_demo['valid_date'] == '2020-12-31') &
                       ((df_demo['territory_code'] == '3018') |
                       (df_demo['territory_code'] == '3026') |
@@ -113,10 +119,10 @@ def B1_extract_csv(db):
 
     df_demo['value'] = df_demo['value'].astype(int)
 
-    df_demo_sum = df_demo.groupby('territory_code')['value'].sum()
-    df_demo_sum = df_demo_sum.reset_index()
-    df_demo_sum = df_demo_sum.rename(columns={"territory_code": "value", "value": "population"})
-    df_demo_sum['value'] = df_demo_sum['value'].astype(int)
+    # df_demo_sum = df_demo.groupby('territory_code')['value'].sum()
+    # df_demo_sum = df_demo_sum.reset_index()
+    # df_demo_sum = df_demo_sum.rename(columns={"territory_code": "value", "value": "population"})
+    # df_demo_sum['value'] = df_demo_sum['value'].astype(int)
 
 
     # Divide by quarter
