@@ -107,7 +107,8 @@ def A1_plot_graph(csv_location="A1.csv", save_location=""):
 
     df = pd.read_csv(csv_location, sep=";", encoding="utf-8")
     fig, ax = plt.subplots(figsize=(12, 8))
-    g = sns.lineplot(x='month', y='value', hue='variable', data=pd.melt(df, ['month']), ax=ax)
+    pal = sns.color_palette("mako", 4)
+    g = sns.lineplot(x='month', y='value', hue='variable', data=pd.melt(df, ['month']), ax=ax, palette=pal)
     g.set_yscale("log")
     g.set_xlabel("Mesiac", fontsize=20)
     g.set_ylabel("Počet", fontsize=20)

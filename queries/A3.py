@@ -95,8 +95,12 @@ def A3_plot_graph(csv_location="A3.csv", save_location="A3.png"):
     fig.suptitle('Očkovanie v krajoch', fontsize=30)
     # Graph 1 - Total number of vaccinations in each region
     df_graph1 = df.groupby(['region'])['count'].sum().reset_index()
-
-    g = sns.barplot(ax=axes[0], x='region', y='count', data=df_graph1)
+    # To make color gradient by order
+    pal1 = sns.color_palette("ch:start=.2,rot=-.3_r", len(df_graph1))
+    order = df_graph1.sort_values('count', ascending=False).region
+    g = sns.barplot(ax=axes[0], x='region', y='count', data=df_graph1,
+                    order=order,
+                    palette=pal1)
     g.set_xlabel("Kraj", fontsize=20)
     g.set_ylabel("Počet očkovaných", fontsize=20)
     plt.setp(axes[0].xaxis.get_majorticklabels(), rotation=45)
@@ -114,8 +118,9 @@ def A3_plot_graph(csv_location="A3.csv", save_location="A3.png"):
                                       "female": female}, ignore_index=True)
 
     labels = ["Celkovo", "Muži", "Ženy"]
-
-    g = sns.barplot(x='region', y='value', hue='variable', data=pd.melt(df_graph2, ['region']), ax=axes[1])
+    pal2 = sns.color_palette("ch:start=.2,rot=-.3_r", 3)
+    g = sns.barplot(x='region', y='value', hue='variable', data=pd.melt(df_graph2, ['region']), ax=axes[1],
+                    order=order, palette=pal2)
     g.set_xlabel("Kraj", fontsize=20)
     g.set_ylabel("")
     h, l = axes[1].get_legend_handles_labels()
@@ -142,8 +147,9 @@ def A3_plot_graph(csv_location="A3.csv", save_location="A3.png"):
                                       "group3": num_group3}, ignore_index=True)
 
     labels = ["Celkovo", "Deti a mladí", "Dospelí", "Starší"]
-
-    g = sns.barplot(x='region', y='value', hue='variable', data=pd.melt(df_graph3, ['region']), ax=axes[2])
+    pal3 = sns.color_palette("ch:start=.2,rot=-.3_r", 4)
+    g = sns.barplot(x='region', y='value', hue='variable', data=pd.melt(df_graph3, ['region']), ax=axes[2],
+                    order=order, palette=pal3)
     g.set_xlabel("Kraj", fontsize=20)
     g.set_ylabel("")
     h, l = axes[2].get_legend_handles_labels()
