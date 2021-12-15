@@ -121,8 +121,8 @@ def B1_extract_csv(db):
 
     # df_demo_sum = df_demo.groupby('territory_code')['value'].sum()
     # df_demo_sum = df_demo_sum.reset_index()
-    # df_demo_sum = df_demo_sum.rename(columns={"territory_code": "value", "value": "population"})
-    # df_demo_sum['value'] = df_demo_sum['value'].astype(int)
+    df_demo_sum = df_demo.rename(columns={"territory_code": "value", "value": "population"})
+    df_demo_sum['value'] = df_demo_sum['value'].astype(int)
 
 
     # Divide by quarter
