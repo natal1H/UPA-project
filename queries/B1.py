@@ -33,8 +33,6 @@ parser.add_argument('-d', '--database', help="Database name", default="UPA-db")
 
 
 def B1_extract_csv(db):
-    # TODO Q3-2020 - Q3-2021
-
     pipeline = [
         {"$match":
              {'date':
@@ -178,62 +176,52 @@ def B1_extract_csv(db):
     df_Q3_infected_2020 = df_Q3_infected_2020.set_index('region_shortcut')
     df_Q4_infected_2020 = df_Q4_infected_2020.set_index('region_shortcut')
 
+    # Sort each dataframe by normalized infected
+    df_Q1_infected_2020 = df_Q1_infected_2020.sort_values('infected_normalized', ascending=False)
+    df_Q2_infected_2020 = df_Q2_infected_2020.sort_values('infected_normalized', ascending=False)
+    df_Q3_infected_2020 = df_Q3_infected_2020.sort_values('infected_normalized', ascending=False)
+    df_Q4_infected_2020 = df_Q4_infected_2020.sort_values('infected_normalized', ascending=False)
+
     df_Q1_infected_2020.to_csv('B1_Q1.csv', sep=';', encoding='utf-8')
     df_Q2_infected_2020.to_csv('B1_Q2.csv', sep=';', encoding='utf-8')
     df_Q3_infected_2020.to_csv('B1_Q3.csv', sep=';', encoding='utf-8')
     df_Q4_infected_2020.to_csv('B1_Q4.csv', sep=';', encoding='utf-8')
 
 
-def B1_plot_graph(save_location="B1.png"):
+def B1_plot_graph(save_location="B1.png", csv_loc="B1_Q4.csv", quarter="Q4"):
     sns.set_style("darkgrid")
 
     # Load csv first, rename columns for later mergin, drop unnecessary columns
-    df_q1 = pd.read_csv('B1_Q1.csv', sep=";", encoding="utf-8")
-    df_q1 = df_q1.rename(columns={"infected": "infected_q1", "infected_normalized": "infected_normalized_q1"})
-    df_q1 = df_q1.drop(['cznuts', 'value', 'quarter'], axis=1)
-    df_q2 = pd.read_csv('B1_Q2.csv', sep=";", encoding="utf-8")
-    df_q2 = df_q2.rename(columns={"infected": "infected_q2", "infected_normalized": "infected_normalized_q2"})
-    df_q2 = df_q2.drop(['cznuts', 'value', 'quarter'], axis=1)
-    df_q3 = pd.read_csv('B1_Q3.csv', sep=";", encoding="utf-8")
-    df_q3 = df_q3.rename(columns={"infected": "infected_q3", "infected_normalized": "infected_normalized_q3"})
-    df_q3 = df_q3.drop(['cznuts', 'value', 'quarter'], axis=1)
-    df_q4 = pd.read_csv('B1_Q4.csv', sep=";", encoding="utf-8")
-    df_q4 = df_q4.rename(columns={"infected": "infected_q4", "infected_normalized": "infected_normalized_q4"})
-    df_q4 = df_q4.drop(['cznuts', 'value', 'quarter'], axis=1)
-
-    # Merge dataframes into one
-    df_merged = pd.merge(df_q1, df_q2, on=['region_shortcut', 'population'])
-    df_merged = pd.merge(df_merged, df_q3, on=['region_shortcut', 'population'])
-    df_merged = pd.merge(df_merged, df_q4, on=['region_shortcut', 'population'])
+    df_q = pd.read_csv(csv_loc, sep=";", encoding="utf-8")
+    df_q = df_q.drop(['cznuts', 'value', 'quarter'], axis=1)
 
     fig, axes = plt.subplots(2, 1, figsize=(18, 18))
-    fig.suptitle("\"Best in covid\" za posledné 4 štvrťroky", fontsize=40)
+    fig.suptitle("\"Best in covid\" za štvrťrok {} 2021".format(quarter), fontsize=40)
     # 1st graph - select necessary columns from merged dataframe (region population and newly infected
-    df_graph1 = df_merged[["region_shortcut", "population", "infected_q1", "infected_q2", "infected_q3", "infected_q4"]]
+    df_graph1 = df_q[["region_shortcut", "population", "infected"]]
 
     # Graph designing
-    g = sns.barplot(x='region_shortcut', y='value', hue='variable', data=pd.melt(df_graph1, ['region_shortcut']), ax=axes[0])
+    order = df_q.sort_values('infected_normalized', ascending=False).region_shortcut
+    g = sns.barplot(x='region_shortcut', y='value', hue='variable', data=pd.melt(df_graph1, ['region_shortcut']),
+                    ax=axes[0], order=order)
     g.set_xlabel("Kraj", fontsize=20)
     g.set_ylabel("Počet", fontsize=20)
     g.set_title("Vývoj počtu novo nakazených vzhľadom na populáciu kraja", fontsize=30)
     g.set_yscale("log")
-    labels = ["Populácia kraja", "Nakazení Q1", "Nakazení Q2", "Nakazení Q3", "Nakazení Q4"]
+    labels = ["Populácia kraja", "Nakazení {}".format(quarter)]
     h, l = axes[0].get_legend_handles_labels()
     axes[0].legend(h, labels, loc='upper left', title="", fontsize=15)
     plt.setp(axes[0].xaxis.get_majorticklabels(), rotation=45)
 
     # 2nd graph - select necessary columns from merged dataframe (infected per 1 inhabitant)
-    df_graph2 = df_merged[["region_shortcut", "infected_normalized_q1", "infected_normalized_q2",
-                           "infected_normalized_q3", "infected_normalized_q4"]]
+    df_graph2 = df_q[["region_shortcut", "infected_normalized"]]
 
     # Graph designing
-    g = sns.lineplot(x='region_shortcut', y='value', hue='variable', data=pd.melt(df_graph2, ['region_shortcut']), ax=axes[1])
+    g = sns.lineplot(x='region_shortcut', y='infected_normalized',
+                     data=df_graph2.sort_values('infected_normalized', ascending=False), ax=axes[1])
     g.set_xlabel("Kraj", fontsize=20)
     g.set_ylabel("Počet nakazených na 1 obyvateľa", fontsize=20)
     g.set_title("Vývoj počtu nakazených na 1 obyvateľa v krajoch", fontsize=30)
-    labels = ["Nakazení na 1 obyvateľa Q1", "Nakazení na 1 obyvateľa Q2", "Nakazení na 1 obyvateľa Q3", "Nakazení na 1 obyvateľa Q4"]
-    h, l = axes[1].get_legend_handles_labels()
-    axes[1].legend(h, labels, loc='upper left', title="", fontsize=15)
     plt.setp(axes[1].xaxis.get_majorticklabels(), rotation=45)
 
     if len(save_location) > 0:
