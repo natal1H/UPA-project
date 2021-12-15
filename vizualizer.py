@@ -4,6 +4,8 @@ from queries.A1 import A1_extract_csv, A1_plot_graph
 from queries.A3 import A3_extract_csv, A3_plot_graph
 from queries.B1 import B1_extract_csv, B1_plot_graph
 from queries.C1 import c1
+from queries.VL1 import VL1_extract_csv, VL1_plot_graph
+from queries.VL2 import VL2_extract_csv, VL2_plot_graph
 
 """UPA - 2nd part
     Theme: Covid-19
@@ -32,6 +34,11 @@ def main():
     B1_extract_csv(mongo_db)
     B1_plot_graph("B1.png")
     c1(mongo_db)
+    VL1_extract_csv(mongo_db)
+    VL1_plot_graph("VL1.png")
+    VL2_extract_csv(mongo_db)
+    VL2_plot_graph("VL1.png")
+
 
     mongo_client.close()
 
