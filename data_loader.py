@@ -497,8 +497,8 @@ def main():
     print("- region enumerator data loaded")
     load_district_enumerator_data(mongo_db)
     print("- district enumerator data loaded")
-    # load_vaccinated_by_profession(mongo_db)
-    # print("- load_vaccinated by profession loaded")
+    load_vaccinated_by_profession(mongo_db)
+    print("- load_vaccinated by profession loaded")
 
     # Create indexes for each collection
     create_indexes(mongo_db)
