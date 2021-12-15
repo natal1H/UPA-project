@@ -38,7 +38,7 @@ def B1_extract_csv(db):
     pipeline = [
         {"$match":
              {'date':
-                  { "$regex": "^2020"}}
+                  { "$regex": "^2021"}}
          },
         {"$project": {
             "date": 1,

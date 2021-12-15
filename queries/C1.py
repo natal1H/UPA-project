@@ -24,7 +24,7 @@ def c1(db, csv_location="C1.csv"):
     pipeline = [
         {"$match":
              {'date':
-                  {"$regex": "^202"}}
+                  {"$regex": "^2021"}}
          },
         {"$project": {
             "date": 1,
@@ -78,7 +78,7 @@ def c1(db, csv_location="C1.csv"):
     pipeline = [
         {"$match":
              {'date':
-                  {"$regex": "^202"},
+                  {"$regex": "^2021"},
               '$or':[
                       {'shot_order': 2, 'vaccine_code': 'CO01'},
                       {'shot_order': 2, 'vaccine_code': 'CO02'},
