@@ -34,9 +34,9 @@ def main():
     B1_extract_csv(mongo_db)
     B1_plot_graph("B1.png")
     c1(mongo_db, csv_location="C1.csv")
-    VL1_extract_csv(mongo_db)
-    VL1_plot_graph("VL1.png")
-    VL2_extract_csv(mongo_db)
+    VL1_extract_csv(mongo_db, "VL1.csv")
+    VL1_plot_graph("VL1.csv", "VL1.png")
+    VL2_extract_csv(mongo_db, "VL2.csv")
     VL2_plot_graph("VL2.csv", "VL2.png")
 
     mongo_client.close()
