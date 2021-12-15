@@ -2,9 +2,9 @@ import pymongo
 import pandas as pd
 import matplotlib.pyplot as plt
 from bson.json_util import dumps
-import re
 import json
 import seaborn as sns
+from argparse import ArgumentParser
 
 """UPA - 2nd part
     Theme: Covid-19
@@ -18,6 +18,10 @@ import seaborn as sns
         - Roland Žitný (xzitny01)
 """
 
+parser = ArgumentParser(prog='UPA-data_loader')
+parser.add_argument('-m', '--mongo', help="Mongo db location",
+                    default="mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000")
+parser.add_argument('-d', '--database', help="Database name", default="UPA-db")
 
 def VL1_extract_csv(db, csv_location="VL1.csv"):
     """
@@ -73,32 +77,40 @@ def VL1_extract_csv(db, csv_location="VL1.csv"):
     df_dead = pd.merge(df_dead, region_enum, on='cznuts')
     df_dead = df_dead.drop(columns='cznuts')
 
+    df_dead = df_dead.set_index('region_shortcut')
     df_dead.to_csv(csv_location, sep=';', encoding='utf-8')
 
 
 def VL1_plot_graph(save_location="VL1.png"):
     sns.set_style("darkgrid")
 
-
     df = pd.read_csv('VL1.csv', sep=";", encoding="utf-8")
-    df = df.drop(['Unnamed: 0'], axis=1)
-    # df_graph = df[["region_shortcut", "infected_normalized_q1", "infected_normalized_q2",
-    #                 "infected_normalized_q3", "infected_normalized_q4"]]
+    fig, ax = plt.subplots(figsize=(12, 12))
 
-    fig, axes = plt.subplots(1, 1, figsize=(18, 18))
+    # To make color gradient by order
+    pal = sns.color_palette("ch:start=.2,rot=-.3_r", len(df))
 
     # Graph designing
-    g = sns.barplot(x='region_shortcut', y='value', hue='variable', data=pd.melt(df, ['region_shortcut']))
-
-
-    g.set_xlabel("Kraj", fontsize=20)
-    g.set_ylabel("Počet úmrtí", fontsize=20)
-    g.set_title("Počet úmrtí v krajoch za pandémiu COVID-19", fontsize=30)
-    labels = ["Úmrtia v krajoch"]
-    h, l = axes.get_legend_handles_labels()
-    axes.legend(h, labels, loc='upper left', title="", fontsize=20)
-    plt.setp(axes.xaxis.get_majorticklabels(), rotation=45, fontsize=25)
+    g = sns.barplot(ax=ax, x='region_shortcut', y='dead_count', data=df,
+                    order=df.sort_values('dead_count', ascending=False).region_shortcut,
+                    palette=pal)
+    g.set_xlabel("Kraj", fontsize=25)
+    g.set_ylabel("Počet úmrtí", fontsize=25)
+    plt.title("Počet úmrtí v krajoch počas pandémie Covid-19", fontsize=35)
+    plt.xticks(rotation=45)
 
     if len(save_location) > 0:
         plt.savefig(save_location)
     plt.show()
+
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    # MongoDB connection
+    mongo_client = pymongo.MongoClient(args.mongo)
+    mongo_db = mongo_client[args.database]
+
+    VL1_extract_csv(mongo_db)
+    VL1_plot_graph("VL1.png")
+
+    mongo_client.close()

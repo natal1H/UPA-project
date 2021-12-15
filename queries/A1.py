@@ -106,7 +106,6 @@ def A1_plot_graph(csv_location="A1.csv", save_location=""):
     sns.set_style("darkgrid")
 
     df = pd.read_csv(csv_location, sep=";", encoding="utf-8")
-    print(df.head())
     fig, ax = plt.subplots(figsize=(12, 8))
     g = sns.lineplot(x='month', y='value', hue='variable', data=pd.melt(df, ['month']), ax=ax)
     g.set_yscale("log")
