@@ -121,7 +121,8 @@ def c1(db, csv_location="C1.csv"):
         {"$match":
              {
                  # TODO teraz ich je 51
-                 'territory_txt': {'$in': ['Benešov', 'Beroun', 'Kladno', 'Kolín', 'Mělník', 'Nymburk', 'Příbram', 'Rakovník', 'Písek', 'Prachatice', 'Strakonice', 'Tábor', 'Domažlice', 'Klatovy', 'Rokycany', 'Tachov', 'Cheb', 'Sokolov', 'Děčín', 'Chomutov', 'Litoměřice', 'Louny', 'Most', 'Teplice', 'Liberec', 'Semily', 'Jičín', 'Náchod', 'Trutnov', 'Chrudim', 'Pardubice', 'Svitavy', 'Jihlava', 'Pelhřimov', 'Třebíč', 'Blansko', 'Břeclav', 'Hodonín', 'Vyškov', 'Znojmo', 'Jeseník', 'Olomouc', 'Prostějov', 'Přerov', 'Šumperk', 'Kroměříž', 'Vsetín', 'Zlín', 'Bruntál', 'Frýdek-Místek', 'Karviná', 'Opava']},
+                 # 'territory_txt': {'$in': ['Benešov', 'Beroun', 'Kladno', 'Kolín', 'Mělník', 'Nymburk', 'Příbram', 'Rakovník', 'Písek', 'Prachatice', 'Strakonice', 'Tábor', 'Domažlice', 'Klatovy', 'Rokycany', 'Tachov', 'Cheb', 'Sokolov', 'Děčín', 'Chomutov', 'Litoměřice', 'Louny', 'Most', 'Teplice', 'Liberec', 'Semily', 'Jičín', 'Náchod', 'Trutnov', 'Chrudim', 'Pardubice', 'Svitavy', 'Jihlava', 'Pelhřimov', 'Třebíč', 'Blansko', 'Břeclav', 'Hodonín', 'Vyškov', 'Znojmo', 'Jeseník', 'Olomouc', 'Prostějov', 'Přerov', 'Šumperk', 'Kroměříž', 'Vsetín', 'Zlín', 'Bruntál', 'Frýdek-Místek', 'Karviná', 'Opava']},
+                 'territory_txt': {'$in': ['Kladno', 'Kolín', 'Mělník', 'Nymburk', 'Příbram', 'Rakovník', 'Písek', 'Prachatice', 'Strakonice', 'Tábor', 'Domažlice', 'Klatovy', 'Rokycany', 'Tachov', 'Cheb', 'Sokolov', 'Děčín', 'Chomutov', 'Litoměřice', 'Louny', 'Most', 'Teplice', 'Liberec', 'Semily', 'Jičín', 'Náchod', 'Trutnov', 'Chrudim', 'Pardubice', 'Svitavy', 'Jihlava', 'Pelhřimov', 'Třebíč', 'Blansko', 'Břeclav', 'Hodonín', 'Vyškov', 'Znojmo', 'Jeseník', 'Olomouc', 'Prostějov', 'Přerov', 'Šumperk', 'Kroměříž', 'Vsetín', 'Zlín', 'Bruntál', 'Frýdek-Místek', 'Karviná', 'Opava']},
                  'valid_date': '2020-12-31'
              }
          },
@@ -230,6 +231,8 @@ def c1(db, csv_location="C1.csv"):
                               ])
 
     df_merged = df_merged.astype({"vaccinated_count": int})
+
+    df_merged['normalized_population_count(age_0-14)'] = df_merged['population_count(age_0-14)']/(df_merged['population_count(age_0-14)']+df_merged['population_count(age_15-59)']+df_merged['population_count(age_59-above)'])
 
     df_merged.to_csv(csv_location, sep=';', encoding='utf-8')
 
