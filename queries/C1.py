@@ -62,7 +62,7 @@ def c1(db, csv_location="C1.csv"):
     district_enum = json.loads(district_enum)
 
     district_enum = pd.json_normalize(district_enum)
-    district_enum = district_enum.drop('_id.$oid', 1)
+    district_enum = district_enum.drop(columns='_id.$oid')
     district_enum = district_enum[district_enum['cznuts'] !='CZZZZZ']
 
     district_enum = district_enum.rename(
@@ -143,7 +143,7 @@ def c1(db, csv_location="C1.csv"):
     df_demo = json.loads(df_demo)
 
     df_demo = pd.json_normalize(df_demo).reset_index(drop=True)
-    df_demo = df_demo.drop('_id.$oid', 1)
+    df_demo = df_demo.drop(columns='_id.$oid')
 
     df_demo_0_14 = df_demo[(df_demo['age_code'] == '400000600005000') |   # 0-5
                            (df_demo['age_code'] == '400005610010000') |  # 5-10
@@ -175,26 +175,26 @@ def c1(db, csv_location="C1.csv"):
     df_demo_15_59 = df_demo_15_59[df_demo_15_59['gender_code'].isnull()]
     df_demo_59_above = df_demo_59_above[df_demo_59_above['gender_code'].isnull()]
 
-    df_demo_0_14 = df_demo_0_14.drop(['gender_code',
+    df_demo_0_14 = df_demo_0_14.drop(columns=['gender_code',
                                       'age_code',
                                       'territory_code',
                                       'age_txt',
                                       'gender_txt'
-                                      ], 1)
+                                      ])
 
-    df_demo_15_59 = df_demo_15_59.drop(['gender_code',
+    df_demo_15_59 = df_demo_15_59.drop(columns=['gender_code',
                                         'age_code',
                                         'territory_code',
                                         'age_txt',
                                         'gender_txt'
-                                        ], 1)
+                                        ])
 
-    df_demo_59_above = df_demo_59_above.drop(['gender_code',
+    df_demo_59_above = df_demo_59_above.drop(columns=['gender_code',
                                               'age_code',
                                               'territory_code',
                                               'age_txt',
                                               'gender_txt'
-                                              ], 1)
+                                              ])
 
     df_demo_0_14 = df_demo_0_14.astype({"value": int})
     df_demo_15_59 = df_demo_15_59.astype({"value": int})
@@ -224,10 +224,10 @@ def c1(db, csv_location="C1.csv"):
     df_merged = pd.merge(df_merged, df_demo_15_59, on='district_name')
     df_merged = pd.merge(df_merged, df_demo_59_above, on='district_name')
 
-    df_merged = df_merged.drop(['cznuts',
+    df_merged = df_merged.drop(columns=['cznuts',
                                   'okres_lau',
                                   'region_shortcut',
-                              ], 1)
+                              ])
 
     df_merged = df_merged.astype({"vaccinated_count": int})
 

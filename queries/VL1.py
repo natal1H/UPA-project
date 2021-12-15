@@ -67,11 +67,11 @@ def VL1_extract_csv(db, csv_location="VL1.csv"):
     region_enum = json.loads(region_enum)
 
     region_enum = pd.json_normalize(region_enum)
-    region_enum = region_enum.drop('_id.$oid', 1)
+    region_enum = region_enum.drop(columns='_id.$oid')
     region_enum = region_enum[region_enum['cznuts'] !='CZZZZ']
 
     df_dead = pd.merge(df_dead, region_enum, on='cznuts')
-    df_dead = df_dead.drop('cznuts', 1)
+    df_dead = df_dead.drop(columns='cznuts')
 
     df_dead.to_csv(csv_location, sep=';', encoding='utf-8')
 
