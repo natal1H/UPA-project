@@ -16,9 +16,6 @@ from urllib.request import urlopen
 """
 
 parser = ArgumentParser(prog='UPA-data_loader')
-# parser.add_argument('-m', '--mongo', help="Mongo db location", default="mongodb://localhost:27017/")
-
-# TODO VB DB
 parser.add_argument('-m', '--mongo', help="Mongo db location",
                     default="mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000")
 parser.add_argument('-f', '--folder', help="Folder for downloading csv files", default="data/")
@@ -82,11 +79,13 @@ def download_csv(url, filename):
             for line in response.iter_lines():
                 writer.writerow(line.decode('utf-8').split(','))
 
+
 def download_xml(url, filename):
     if not os.path.exists(filename):
         response = requests.get(url)
         with open(filename, 'wb') as f:
             f.write(response.content)
+
 
 def insert_df_to_mongo(db, col_name, df):
     """
@@ -387,7 +386,6 @@ def load_district_enumerator_data(db):
 
 def create_indexes(db):
 
-    # TODO dorobit pre vsetky kolekcie
     def infected_indexes():
         ...
     def cured_indexes():
@@ -474,7 +472,6 @@ def main():
                  XML_FILES["region_enumerator"]["filename"])
     download_xml(XML_FILES["district_enumerator"]["url"],
                  XML_FILES["district_enumerator"]["filename"])
-
 
     print("All documents downloaded. Loading into database now...")
 

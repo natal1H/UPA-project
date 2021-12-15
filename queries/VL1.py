@@ -23,6 +23,7 @@ parser.add_argument('-m', '--mongo', help="Mongo db location",
                     default="mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000")
 parser.add_argument('-d', '--database', help="Database name", default="UPA-db")
 
+
 def VL1_extract_csv(db, csv_location="VL1.csv"):
     """
     Smrť po krajoch
@@ -81,10 +82,10 @@ def VL1_extract_csv(db, csv_location="VL1.csv"):
     df_dead.to_csv(csv_location, sep=';', encoding='utf-8')
 
 
-def VL1_plot_graph(save_location="VL1.png"):
+def VL1_plot_graph(csv_location="VL1.csv", save_location="VL1.png"):
     sns.set_style("darkgrid")
 
-    df = pd.read_csv('VL1.csv', sep=";", encoding="utf-8")
+    df = pd.read_csv(csv_location, sep=";", encoding="utf-8")
     fig, ax = plt.subplots(figsize=(12, 12))
 
     # To make color gradient by order
@@ -110,7 +111,7 @@ if __name__ == "__main__":
     mongo_client = pymongo.MongoClient(args.mongo)
     mongo_db = mongo_client[args.database]
 
-    VL1_extract_csv(mongo_db)
-    VL1_plot_graph("VL1.png")
+    VL1_extract_csv(mongo_db, "VL1.csv")
+    VL1_plot_graph("VL1.csv", "VL1.png")
 
     mongo_client.close()

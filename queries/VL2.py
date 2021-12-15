@@ -2,28 +2,34 @@ import pymongo
 import pandas as pd
 import matplotlib.pyplot as plt
 from bson.json_util import dumps
-import re
 import json
 import seaborn as sns
+from argparse import ArgumentParser
 
 """UPA - 2nd part
     Theme: Covid-19
 
     Operations with query VL1:
-    --
-
+    Vytvorte stĺpcový graf popisujúci štatistiku o nasledujúcich dvoch hodnotách:
+        - Počet očkovaných osôb v jednotlivých krajoch
+        - Počet úmrtí v jednotlivých krajoch
+        
     Authors: 
         - Filip Bali (xbalif00)
         - Natália Holková (xholko02)
         - Roland Žitný (xzitny01)
 """
 
+parser = ArgumentParser(prog='UPA-data_loader')
+parser.add_argument('-m', '--mongo', help="Mongo db location",
+                    default="mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000")
+parser.add_argument('-d', '--database', help="Database name", default="UPA-db")
+
 
 def VL2_extract_csv(db, csv_location="VL2.csv"):
     """
-    Smrť po krajoch
+    Smrť a očkovanie po krajoch
     """
-
     pipeline = [
         {"$match":
              {'date':
@@ -40,8 +46,7 @@ def VL2_extract_csv(db, csv_location="VL2.csv"):
                 "_id": {"cznuts": "$region"},
                 "dead_count": {"$sum": 1},
             }
-        },
-
+        }
     ]
 
     df_dead = db.dead.aggregate(pipeline)
@@ -127,7 +132,7 @@ def VL2_extract_csv(db, csv_location="VL2.csv"):
             "gender_txt": 1,
             "age_code": 1,
             "age_txt": 1,
-        }
+            }
         }
     ]
 
@@ -177,20 +182,39 @@ def VL2_extract_csv(db, csv_location="VL2.csv"):
                                     'territory_code',
                                     ])
 
-
     df_dead_vaccinated_region = pd.merge(df_dead_vaccinated_region, df_demo, on='region_name')
-
-    df_dead_vaccinated_region = df_dead_vaccinated_region.drop(columns=['cznuts','region_name',])
-
+    df_dead_vaccinated_region = df_dead_vaccinated_region.drop(columns=['cznuts', 'region_name'])
+    df_dead_vaccinated_region = df_dead_vaccinated_region.set_index('region_shortcut')
     df_dead_vaccinated_region.to_csv(csv_location, sep=';', encoding='utf-8')
-    ...
 
-def VL2_plot_graph(csv_location="A1.csv", save_location=""):
+
+def VL2_plot_graph(csv_location="VL2.csv", save_location="VL2.png"):
     sns.set_style("darkgrid")
 
-    df = pd.read_csv('VL2.csv', sep=";", encoding="utf-8")
-    df = df.drop(['Unnamed: 0'], axis=1)
+    df = pd.read_csv(csv_location, sep=";", encoding="utf-8")
+    df = df[["region_shortcut", "population", "vaccinated_count", "dead_count"]]
+    fig, ax = plt.subplots(figsize=(12, 10))
+    g = df.plot.bar(x="region_shortcut", ax=ax)
+    g.set_yscale("log")
+    g.set_xlabel("Kraje", fontsize=20)
+    g.set_ylabel("Počet", fontsize=20)
+    plt.legend(title='', loc='upper right', labels=['Populácia kraja', 'Očkovaní', 'Mŕtvi'], fontsize=15)
+    plt.title("Počty očkovaných a mŕtvych v závislosti na kraje ČR", fontsize=30)
+    plt.xticks(rotation=45)
 
-    fig, axes = plt.subplots(1, 1, figsize=(18, 18))
+    fig.tight_layout()
+    if len(save_location) > 0:
+        plt.savefig(save_location)
+    plt.show()
 
-    ...
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    # MongoDB connection
+    mongo_client = pymongo.MongoClient(args.mongo)
+    mongo_db = mongo_client[args.database]
+
+    VL2_extract_csv(mongo_db, "VL2.csv")
+    VL2_plot_graph("VL2.csv", "VL2.png")
+
+    mongo_client.close()
