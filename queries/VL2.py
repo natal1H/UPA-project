@@ -68,7 +68,7 @@ def VL2_extract_csv(db, csv_location="VL2.csv"):
     region_enum = json.loads(region_enum)
 
     region_enum = pd.json_normalize(region_enum)
-    region_enum = region_enum.drop('_id.$oid', 1)
+    region_enum = region_enum.drop(columns='_id.$oid')
     region_enum = region_enum[region_enum['cznuts'] != 'CZZZZ']
 
     df_dead = pd.merge(df_dead, region_enum, on='cznuts')
@@ -155,10 +155,10 @@ def VL2_extract_csv(db, csv_location="VL2.csv"):
                        (df_demo['territory_code'] == '3140'))
                       ]
 
-    df_demo['value'] = df_demo['value'].astype(int)
+    # df_demo['value'] = df_demo['value'].astype(int)
 
-    df_demo = df_demo[df_demo['gender_code'].isnull() &
-                      df_demo['age_code'].isnull()]
+    df_demo = df_demo[df_demo['gender_txt'].isnull() &
+                      df_demo['age_txt'].isnull()]
 
     # df_demo_sum = df_demo.groupby('territory_code')['value'].sum()
     # df_demo_sum = df_demo_sum.reset_index()
@@ -180,7 +180,7 @@ def VL2_extract_csv(db, csv_location="VL2.csv"):
 
     df_dead_vaccinated_region = pd.merge(df_dead_vaccinated_region, df_demo, on='region_name')
 
-    df_dead_vaccinated_region = df_dead_vaccinated_region.drop(['cznuts','region_name',], 1)
+    df_dead_vaccinated_region = df_dead_vaccinated_region.drop(columns=['cznuts','region_name',])
 
     df_dead_vaccinated_region.to_csv(csv_location, sep=';', encoding='utf-8')
     ...
@@ -192,6 +192,5 @@ def VL2_plot_graph(csv_location="A1.csv", save_location=""):
     df = df.drop(['Unnamed: 0'], axis=1)
 
     fig, axes = plt.subplots(1, 1, figsize=(18, 18))
-
 
     ...
