@@ -2,3 +2,5 @@
 data/
 queries/__pycache__/
 *.csv
+*.png
+GUI/__pycache__/

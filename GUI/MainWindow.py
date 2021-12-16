@@ -11,9 +11,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QPixmap
 
-from queries.A1 import A1_plot_graph
-from queries.A3 import A3_plot_graph
-
 
 class Ui_UPA_Covid19(object):
     def setupUi(self, UPA_Covid19):
@@ -260,7 +257,7 @@ class Ui_UPA_Covid19(object):
         """
         self.plot_image.setMaximumWidth(self.plot_image_width)
         self.plot_image.setMaximumHeight(self.plot_image_height)
-        self.plot_image.setPixmap(QPixmap("Plots/A1.png"))
+        self.plot_image.setPixmap(QPixmap("A1.png"))
         self.plot_comment.setText(
             "A1: Predstavený je spojnicový graf zobrazujúci vývoj covidovéj situácie po mesiacoch pomocou hodnot: \n"
             "počet novo nakazených za mesiac, počet novo vyliečených za mesiac, \n"
@@ -270,7 +267,7 @@ class Ui_UPA_Covid19(object):
         """
         18:8
         """
-        self.plot_image.setPixmap(QPixmap("Plots/A3.png"))
+        self.plot_image.setPixmap(QPixmap("A3.png"))
         self.plot_image.setMaximumWidth(1500)
         self.plot_image.setMaximumHeight(670)
         self.plot_image.setScaledContents(True)
@@ -284,7 +281,7 @@ class Ui_UPA_Covid19(object):
         """
         self.plot_image.setMaximumWidth(self.plot_image_width)
         self.plot_image.setMaximumHeight(self.plot_image_height)
-        self.plot_image.setPixmap(QPixmap("../Plots/B2.png"))
+        self.plot_image.setPixmap(QPixmap("B1.png"))
         self.plot_comment.setText("B1: Predstavujú sa štyri rebríčky krajov best in covid za posledné 4 štvročia.\n"
                                   "Ako kritérium je zvolený počet novo nakazených prepočítaný na jedného obyvateľa kraja.\n")
 
@@ -300,7 +297,7 @@ class Ui_UPA_Covid19(object):
         """
         self.plot_image.setMaximumWidth(self.plot_image_width)
         self.plot_image.setMaximumHeight(self.plot_image_height)
-        self.plot_image.setPixmap(QPixmap("../Plots/VL1.png"))
+        self.plot_image.setPixmap(QPixmap("VL1.png"))
         self.plot_comment.setText("Vlasný dotaz 1: Predstavuejem graf popisujúci počet úmrtí a nakazených v jednotlivých krajoch. ")
 
     def VL2_plot(self):
@@ -308,5 +305,5 @@ class Ui_UPA_Covid19(object):
         """
         self.plot_image.setMaximumWidth(self.plot_image_width)
         self.plot_image.setMaximumHeight(self.plot_image_height)
-        self.plot_image.setPixmap(QPixmap("../Plots/VL2.png"))
+        self.plot_image.setPixmap(QPixmap("VL2.png"))
         self.plot_comment.setText("Vlastný dotaz 2: Predstavuje graf popisujúci počet úmrtí a očkovaných v jednotlivých krajoch.")
