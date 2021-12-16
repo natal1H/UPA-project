@@ -127,27 +127,6 @@ class Ui_UPA_Covid19(object):
 "}")
         self.B2.setObjectName("B2")
         self.verticalLayout.addWidget(self.B2)
-        self.C1 = QtWidgets.QPushButton(self.verticalWidget)
-        self.C1.setMinimumSize(QtCore.QSize(150, 40))
-        self.C1.setMaximumSize(QtCore.QSize(150, 40))
-        self.C1.setStyleSheet("QPushButton {\n"
-"    background-color: #D0D6DD;\n"
-"    border-radius: 8px;\n"
-"    padding: 5px;\n"
-"    border: 2px solid #385653; \n"
-"}\n"
-"\n"
-"QPushButton:hover\n"
-"{\n"
-"   background-color: #E7EAEE;\n"
-"}\n"
-"\n"
-"QPushButton:pressed\n"
-"{\n"
-"   background-color: #FFFFFF;\n"
-"}")
-        self.C1.setObjectName("C1")
-        self.verticalLayout.addWidget(self.C1)
         self.VL1 = QtWidgets.QPushButton(self.verticalWidget)
         self.VL1.setMinimumSize(QtCore.QSize(150, 40))
         self.VL1.setMaximumSize(QtCore.QSize(150, 40))
@@ -237,7 +216,6 @@ class Ui_UPA_Covid19(object):
         self.A1.clicked.connect(self.A1_plot)
         self.A3.clicked.connect(self.A3_plot)
         self.B2.clicked.connect(self.B2_plot)
-        self.C1.clicked.connect(self.C1_plot)
         self.VL1.clicked.connect(self.VL1_plot)
         self.VL2.clicked.connect(self.VL2_plot)
 
@@ -247,7 +225,6 @@ class Ui_UPA_Covid19(object):
         self.A1.setText(_translate("UPA_Covid19", "A1"))
         self.A3.setText(_translate("UPA_Covid19", "A3"))
         self.B2.setText(_translate("UPA_Covid19", "B1"))
-        self.C1.setText(_translate("UPA_Covid19", "C1"))
         self.VL1.setText(_translate("UPA_Covid19", "Vlastné 1"))
         self.VL2.setText(_translate("UPA_Covid19", "Vlastné 2"))
         self.label_2.setText(_translate("UPA_Covid19", " UPA - Covid 19         Autori: xbalif00, xholko02, xzitny01"))
@@ -285,20 +262,13 @@ class Ui_UPA_Covid19(object):
         self.plot_comment.setText("B1: Predstavujú sa štyri rebríčky krajov best in covid za posledné 4 štvročia.\n"
                                   "Ako kritérium je zvolený počet novo nakazených prepočítaný na jedného obyvateľa kraja.\n")
 
-    def C1_plot(self):
-        """
-        """
-        self.plot_image.setMaximumWidth(self.plot_image_width)
-        self.plot_image.setMaximumHeight(self.plot_image_height)
-        self.plot_comment.setText("C1:\n")
-
     def VL1_plot(self):
         """"
         """
         self.plot_image.setMaximumWidth(self.plot_image_width)
         self.plot_image.setMaximumHeight(self.plot_image_height)
         self.plot_image.setPixmap(QPixmap("VL1.png"))
-        self.plot_comment.setText("Vlasný dotaz 1: Predstavuejem graf popisujúci počet úmrtí a nakazených v jednotlivých krajoch. ")
+        self.plot_comment.setText("Vlasný dotaz 1: Predstavuejem graf popisujúci počet úmrtí v jednotlivých krajoch. ")
 
     def VL2_plot(self):
         """"
