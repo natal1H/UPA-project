@@ -26,14 +26,13 @@ def main():
     # MongoDB connection
     mongo_client = pymongo.MongoClient(args.mongo)
     mongo_db = mongo_client[args.database]
-
     A1_extract_csv(mongo_db, "A1.csv")
     A1_plot_graph("A1.csv", "A1.png")
     A3_extract_csv(mongo_db, "A3.csv")
     A3_plot_graph("A3.csv", "A3.png")
     B1_extract_csv(mongo_db)
     B1_plot_graph("B1.png")
-    c1(mongo_db, csv_location="C1.csv")
+    c1(mongo_db, csv_before_location="C1_before.csv", csv_after_location="C1_after.csv")
     VL1_extract_csv(mongo_db, "VL1.csv")
     VL1_plot_graph("VL1.csv", "VL1.png")
     VL2_extract_csv(mongo_db, "VL2.csv")

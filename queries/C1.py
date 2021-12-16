@@ -2,11 +2,25 @@ import pandas as pd
 import pymongo
 from bson.json_util import dumps
 import json
+import numpy as np
+from argparse import ArgumentParser
 
-from matplotlib import pyplot as plt
+"""UPA - 2nd part
+    Theme: Covid-19
+
+    Authors: 
+        - Filip Bali (xbalif00)
+        - Natália Holková (xholko02)
+        - Roland Žitný (xzitny01)
+"""
+
+parser = ArgumentParser(prog='UPA-data_loader')
+parser.add_argument('-m', '--mongo', help="Mongo db location",
+                    default="mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000")
+parser.add_argument('-d', '--database', help="Database name", default="UPA-db")
 
 
-def c1(db, csv_location="C1.csv"):
+def c1(db, csv_before_location="C1_before.csv", csv_after_location="C1_after.csv"):
     """
     Hledání skupin podobných měst z hlediska vývoje covidu a věkového složení obyvatel.
 
@@ -231,9 +245,31 @@ def c1(db, csv_location="C1.csv"):
                               ])
 
     df_merged = df_merged.astype({"vaccinated_count": int})
+    df_merged = df_merged.set_index("district_name")  # Set index to town name (unique value)
+    # Write to file df before applying normalization, discretization and dealing with outliers
+    df_merged.to_csv(csv_before_location, sep=';', encoding='utf-8')
 
-    df_merged['normalized_population_count(age_0-14)'] = df_merged['population_count(age_0-14)']/(df_merged['population_count(age_0-14)']+df_merged['population_count(age_15-59)']+df_merged['population_count(age_59-above)'])
+    # Prepare csv after aplying normalization, discretization and dealing with outliers
+    df_merged['population_count(age_0-14)'] = df_merged['population_count(age_0-14)'] / \
+                                              (df_merged['population_count(age_0-14)'] +
+                                               df_merged['population_count(age_15-59)'] +
+                                               df_merged['population_count(age_59-above)'])  # Normalization
+    # Replace outliers from vaccinate count and replace with median
+    median_vaccinated = df_merged["vaccinated_count"].median()
+    std_vaccinated = df_merged["vaccinated_count"].std()
+    df_merged.loc[(df_merged.vaccinated_count - median_vaccinated).abs() > std_vaccinated, 'vaccinated_count'] = np.nan
+    df_merged.fillna(median_vaccinated, inplace=True)
 
-    df_merged.to_csv(csv_location, sep=';', encoding='utf-8')
+    # Write new df to csv
+    df_merged.to_csv(csv_after_location, sep=';', encoding='utf-8')
 
 
+if __name__ == "__main__":
+    args = parser.parse_args()
+    # MongoDB connection
+    mongo_client = pymongo.MongoClient(args.mongo)
+    mongo_db = mongo_client[args.database]
+
+    c1(mongo_db, csv_before_location="C1_before.csv", csv_after_location="C1_after.csv")
+
+    mongo_client.close()
