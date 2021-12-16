@@ -160,16 +160,8 @@ def VL2_extract_csv(db, csv_location="VL2.csv"):
                        (df_demo['territory_code'] == '3140'))
                       ]
 
-    # df_demo['value'] = df_demo['value'].astype(int)
-
     df_demo = df_demo[df_demo['gender_txt'].isnull() &
                       df_demo['age_txt'].isnull()]
-
-    # df_demo_sum = df_demo.groupby('territory_code')['value'].sum()
-    # df_demo_sum = df_demo_sum.reset_index()
-    # df_demo_sum = df_demo_sum.rename(columns={"territory_code": "value", "value": "population"})
-    # df_demo_sum['value'] = df_demo_sum['value'].astype(int)
-
     df_demo['value'] = df_demo['value'].astype(int)
     df_demo = df_demo.rename(columns={"territory_txt": "region_name", "value": "population"})
     df_demo = df_demo.reset_index()

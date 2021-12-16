@@ -60,15 +60,15 @@ def B1_extract_csv(db):
         {"$sort": {"_id.region": 1, "_id.quarter": 1}}
     ]
 
-    Q_infected_2020 = db.infected.aggregate(pipeline)
-    json_Q_infected_2020 = dumps(list(Q_infected_2020))
-    json_Q_infected_2020 = json.loads(json_Q_infected_2020)
+    Q_infected_2021 = db.infected.aggregate(pipeline)
+    json_Q_infected_2021 = dumps(list(Q_infected_2021))
+    json_Q_infected_2021 = json.loads(json_Q_infected_2021)
 
     # pd_data_2020 = pd.DataFrame.from_dict(data_2020)
-    df_Q_infected_2020 = pd.json_normalize(json_Q_infected_2020)
+    df_Q_infected_2021 = pd.json_normalize(json_Q_infected_2021)
 
     # Delete rows when _id.region value is NaN
-    df_Q_infected_2020 = df_Q_infected_2020[df_Q_infected_2020['_id.region'].notna()]
+    df_Q_infected_2021 = df_Q_infected_2021[df_Q_infected_2021['_id.region'].notna()]
 
     # Jako kritérium volte počet nově nakažených přepočtený na jednoho obyvatele kraje.
     pipeline = [
@@ -124,17 +124,17 @@ def B1_extract_csv(db):
 
 
     # Divide by quarter
-    df_Q1_infected_2020 = df_Q_infected_2020[df_Q_infected_2020['_id.quarter'] == 1]
-    df_Q1_infected_2020= df_Q1_infected_2020.rename(columns={"count": "infected", "_id.region": "cznuts", "_id.quarter": "quarter"})
+    df_Q1_infected_2021 = df_Q_infected_2021[df_Q_infected_2021['_id.quarter'] == 1]
+    df_Q1_infected_2021= df_Q1_infected_2021.rename(columns={"count": "infected", "_id.region": "cznuts", "_id.quarter": "quarter"})
 
-    df_Q2_infected_2020 = df_Q_infected_2020[df_Q_infected_2020['_id.quarter'] == 2]
-    df_Q2_infected_2020= df_Q2_infected_2020.rename(columns={"count": "infected", "_id.region": "cznuts", "_id.quarter": "quarter"})
+    df_Q2_infected_2021 = df_Q_infected_2021[df_Q_infected_2021['_id.quarter'] == 2]
+    df_Q2_infected_2021 = df_Q2_infected_2021.rename(columns={"count": "infected", "_id.region": "cznuts", "_id.quarter": "quarter"})
 
-    df_Q3_infected_2020 = df_Q_infected_2020[df_Q_infected_2020['_id.quarter'] == 3]
-    df_Q3_infected_2020= df_Q3_infected_2020.rename(columns={"count": "infected", "_id.region": "cznuts", "_id.quarter": "quarter"})
+    df_Q3_infected_2021 = df_Q_infected_2021[df_Q_infected_2021['_id.quarter'] == 3]
+    df_Q3_infected_2021 = df_Q3_infected_2021.rename(columns={"count": "infected", "_id.region": "cznuts", "_id.quarter": "quarter"})
 
-    df_Q4_infected_2020 = df_Q_infected_2020[df_Q_infected_2020['_id.quarter'] == 4]
-    df_Q4_infected_2020= df_Q4_infected_2020.rename(columns={"count": "infected", "_id.region": "cznuts", "_id.quarter": "quarter"})
+    df_Q4_infected_2021 = df_Q_infected_2021[df_Q_infected_2021['_id.quarter'] == 4]
+    df_Q4_infected_2021 = df_Q4_infected_2021.rename(columns={"count": "infected", "_id.region": "cznuts", "_id.quarter": "quarter"})
 
     pipeline = [
             {"$project": {
@@ -151,41 +151,47 @@ def B1_extract_csv(db):
     df_region_enum = pd.json_normalize(region_enum)
     df_region_enum = df_region_enum.drop(columns='_id.$oid')
 
-    df_Q1_infected_2020 = pd.merge(df_Q1_infected_2020, df_region_enum, on='cznuts')
-    df_Q2_infected_2020 = pd.merge(df_Q2_infected_2020, df_region_enum, on='cznuts')
-    df_Q3_infected_2020 = pd.merge(df_Q3_infected_2020, df_region_enum, on='cznuts')
-    df_Q4_infected_2020 = pd.merge(df_Q4_infected_2020, df_region_enum, on='cznuts')
+    df_Q1_infected_2021 = pd.merge(df_Q1_infected_2021, df_region_enum, on='cznuts')
+    df_Q2_infected_2021 = pd.merge(df_Q2_infected_2021, df_region_enum, on='cznuts')
+    df_Q3_infected_2021 = pd.merge(df_Q3_infected_2021, df_region_enum, on='cznuts')
+    df_Q4_infected_2021 = pd.merge(df_Q4_infected_2021, df_region_enum, on='cznuts')
 
-    df_Q1_infected_2020['value'] = df_Q1_infected_2020['value'].astype(int)
-    df_Q2_infected_2020['value'] = df_Q2_infected_2020['value'].astype(int)
-    df_Q3_infected_2020['value'] = df_Q3_infected_2020['value'].astype(int)
-    df_Q4_infected_2020['value'] = df_Q4_infected_2020['value'].astype(int)
+    df_Q1_infected_2021['value'] = df_Q1_infected_2021['value'].astype(int)
+    df_Q2_infected_2021['value'] = df_Q2_infected_2021['value'].astype(int)
+    df_Q3_infected_2021['value'] = df_Q3_infected_2021['value'].astype(int)
+    df_Q4_infected_2021['value'] = df_Q4_infected_2021['value'].astype(int)
 
-    df_Q1_infected_2020 = pd.merge(df_Q1_infected_2020, df_demo_sum, on='value')
-    df_Q2_infected_2020 = pd.merge(df_Q2_infected_2020, df_demo_sum, on='value')
-    df_Q3_infected_2020 = pd.merge(df_Q3_infected_2020, df_demo_sum, on='value')
-    df_Q4_infected_2020 = pd.merge(df_Q4_infected_2020, df_demo_sum, on='value')
+    df_Q1_infected_2021 = pd.merge(df_Q1_infected_2021, df_demo_sum, on='value')
+    df_Q2_infected_2021 = pd.merge(df_Q2_infected_2021, df_demo_sum, on='value')
+    df_Q3_infected_2021 = pd.merge(df_Q3_infected_2021, df_demo_sum, on='value')
+    df_Q4_infected_2021 = pd.merge(df_Q4_infected_2021, df_demo_sum, on='value')
 
-    df_Q1_infected_2020['infected_normalized'] = df_Q1_infected_2020['infected'] / df_Q1_infected_2020['population']
-    df_Q2_infected_2020['infected_normalized'] = df_Q2_infected_2020['infected'] / df_Q2_infected_2020['population']
-    df_Q3_infected_2020['infected_normalized'] = df_Q3_infected_2020['infected'] / df_Q3_infected_2020['population']
-    df_Q4_infected_2020['infected_normalized'] = df_Q4_infected_2020['infected'] / df_Q4_infected_2020['population']
+    df_Q1_infected_2021['infected_normalized'] = df_Q1_infected_2021['infected'] / df_Q1_infected_2021['population']
+    df_Q2_infected_2021['infected_normalized'] = df_Q2_infected_2021['infected'] / df_Q2_infected_2021['population']
+    df_Q3_infected_2021['infected_normalized'] = df_Q3_infected_2021['infected'] / df_Q3_infected_2021['population']
+    df_Q4_infected_2021['infected_normalized'] = df_Q4_infected_2021['infected'] / df_Q4_infected_2021['population']
 
-    df_Q1_infected_2020 = df_Q1_infected_2020.set_index('region_shortcut')
-    df_Q2_infected_2020 = df_Q2_infected_2020.set_index('region_shortcut')
-    df_Q3_infected_2020 = df_Q3_infected_2020.set_index('region_shortcut')
-    df_Q4_infected_2020 = df_Q4_infected_2020.set_index('region_shortcut')
+    # We don't need all the columns, keep only necessary ones
+    df_Q1_infected_2021 = df_Q1_infected_2021[["region_shortcut", "quarter", "population", "infected", "infected_normalized"]]
+    df_Q2_infected_2021 = df_Q2_infected_2021[["region_shortcut", "quarter", "population", "infected", "infected_normalized"]]
+    df_Q3_infected_2021 = df_Q3_infected_2021[["region_shortcut", "quarter", "population", "infected", "infected_normalized"]]
+    df_Q4_infected_2021 = df_Q4_infected_2021[["region_shortcut", "quarter", "population", "infected", "infected_normalized"]]
+
+    df_Q1_infected_2021 = df_Q1_infected_2021.set_index('region_shortcut')
+    df_Q2_infected_2021 = df_Q2_infected_2021.set_index('region_shortcut')
+    df_Q3_infected_2021 = df_Q3_infected_2021.set_index('region_shortcut')
+    df_Q4_infected_2021 = df_Q4_infected_2021.set_index('region_shortcut')
 
     # Sort each dataframe by normalized infected
-    df_Q1_infected_2020 = df_Q1_infected_2020.sort_values('infected_normalized', ascending=False)
-    df_Q2_infected_2020 = df_Q2_infected_2020.sort_values('infected_normalized', ascending=False)
-    df_Q3_infected_2020 = df_Q3_infected_2020.sort_values('infected_normalized', ascending=False)
-    df_Q4_infected_2020 = df_Q4_infected_2020.sort_values('infected_normalized', ascending=False)
+    df_Q1_infected_2021 = df_Q1_infected_2021.sort_values('infected_normalized', ascending=False)
+    df_Q2_infected_2021 = df_Q2_infected_2021.sort_values('infected_normalized', ascending=False)
+    df_Q3_infected_2021 = df_Q3_infected_2021.sort_values('infected_normalized', ascending=False)
+    df_Q4_infected_2021 = df_Q4_infected_2021.sort_values('infected_normalized', ascending=False)
 
-    df_Q1_infected_2020.to_csv('B1_Q1.csv', sep=';', encoding='utf-8')
-    df_Q2_infected_2020.to_csv('B1_Q2.csv', sep=';', encoding='utf-8')
-    df_Q3_infected_2020.to_csv('B1_Q3.csv', sep=';', encoding='utf-8')
-    df_Q4_infected_2020.to_csv('B1_Q4.csv', sep=';', encoding='utf-8')
+    df_Q1_infected_2021.to_csv('B1_Q1.csv', sep=';', encoding='utf-8')
+    df_Q2_infected_2021.to_csv('B1_Q2.csv', sep=';', encoding='utf-8')
+    df_Q3_infected_2021.to_csv('B1_Q3.csv', sep=';', encoding='utf-8')
+    df_Q4_infected_2021.to_csv('B1_Q4.csv', sep=';', encoding='utf-8')
 
 
 def B1_plot_graph(save_location="B1.png", csv_loc="B1_Q4.csv", quarter="Q4"):
@@ -193,7 +199,7 @@ def B1_plot_graph(save_location="B1.png", csv_loc="B1_Q4.csv", quarter="Q4"):
 
     # Load csv first, rename columns for later mergin, drop unnecessary columns
     df_q = pd.read_csv(csv_loc, sep=";", encoding="utf-8")
-    df_q = df_q.drop(['cznuts', 'value', 'quarter'], axis=1)
+    df_q = df_q.drop(['quarter'], axis=1)
 
     fig, axes = plt.subplots(2, 1, figsize=(18, 18))
     fig.suptitle("\"Best in covid\" za štvrťrok {} 2021".format(quarter), fontsize=40)
